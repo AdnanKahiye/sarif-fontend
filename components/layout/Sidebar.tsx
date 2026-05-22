@@ -72,7 +72,7 @@ export default function Sidebar({ isCollapsed, isMobileOpen, onCloseMobile }: Si
         {/* flex-1 makes this section grow, overflow-y-auto enables the vertical scroll */}
         <nav className="flex-1 overflow-y-auto overflow-x-hidden p-3 space-y-2 mt-4 custom-scrollbar">
           {/* STATIC DASHBOARD */}
-          {hasPermission("VIEW.DASHBOARD") && (
+          {hasPermission("CREATE.USER") && (
             <div className="space-y-1">
               <Link 
                 href="/dashboard"

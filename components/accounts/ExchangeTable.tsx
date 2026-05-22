@@ -1,9 +1,8 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
-import ExchangeFormModal from "./ExchangeFormModal";
+import ExchangeFormModal, { CreateExchangeRequest } from "./ExchangeFormModal";
 import ConfirmDeleteModal from "../ui/Model/ConfirmDeleteModal";
-import { ExchangeFormData } from "./ExchangeFormModal";
 import { AccountService } from "@/lib/account";
 import toast from "react-hot-toast";
 import { Loader2, ChevronLeft, ChevronRight } from "lucide-react";
@@ -256,10 +255,10 @@ const formatMoney = (amount?: number, currencyId?: number) => {
         </div>
       </div>
       
-<ExchangeFormModal
+<ExchangeFormModal 
   open={openForm}
   onClose={() => setOpenForm(false)}
-  onSubmit={async (data: ExchangeFormData) => {
+  onSubmit={async (data: CreateExchangeRequest) => {
     try {
       if (isEdit && selectedItem) {
         // UPDATE

@@ -170,7 +170,7 @@ export default function AccountTable() {
                                     {/* <th className="p-3">Id</th> */}
                                     <th className="p-3">Name</th>
                                     <th className="p-3 text-center">Account Type</th>
-                                    <th className="p-3 text-center">Reference</th>
+                                    {/* <th className="p-3 text-center">Reference</th> */}
                                     <th className="p-3 text-center">Currency</th>
                                     <th className="p-3 text-center">Agency</th>
                                     {/* <th className="p-3 text-center">User</th> */}
@@ -192,7 +192,7 @@ export default function AccountTable() {
                                             {/* <td>{account.id}</td> */}
                                             <td>{account.name}</td>
                                             <td>{account.accountType ?? "N/A"}</td>
-                                            <td>{account.referenceId ?? "N/A"}</td>
+                                            {/* <td>{account.referenceId ?? "N/A"}</td> */}
                                             <td>{account.currencyName}</td>
                                             <td>{account.agencyName}</td>
                                             {/* <td>{account.userName}</td> */}
@@ -249,12 +249,12 @@ export default function AccountTable() {
             <AccountFormModal
                 open={openModal}
                 mode={mode}
-                initialData={selectedCurrency ? {
+                initialData={selectedCurrency ? ({
                     name: selectedCurrency.name,
                     accountType: selectedCurrency.accountType ?? 0,
                     referenceId: selectedCurrency.referenceId ?? "",
                     currencyId: selectedCurrency.currencyId ?? "",
-                } : undefined}
+                } as AccountFormData) : undefined}
                 onClose={() => setOpenModal(false)}
                 onSubmit={handleFormSubmit}
             />

@@ -52,7 +52,7 @@ export default function Sidebar({ isCollapsed, isMobileOpen, onCloseMobile }: Si
       )}
 
       <aside className={`
-        fixed left-0 top-0 z-[60] h-screen bg-[#1e40af] text-white transition-all duration-300
+        fixed left-0 top-0 z-[60] h-screen bg-[#109489] text-white transition-all duration-300
         flex flex-col /* 1. ENSURE SIDEBAR IS A FLEX COLUMN */
         ${isCollapsed ? "lg:w-20" : "lg:w-64"} 
         ${isMobileOpen ? "translate-x-0 w-64" : "-translate-x-full lg:translate-x-0"}

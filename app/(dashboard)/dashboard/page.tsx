@@ -341,13 +341,13 @@ export default function DashboardContent() {
       {/* SUMMARY CARDS */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         <DashboardCard
-          title="Current Balance"
+          title="Total Profit"
           value={
             dashboardLoading
               ? "Loading..."
               : formatBaseAmount(dashboard?.currentBalanceBase || 0)
           }
-          subtitle="Overall balance in base currency"
+          subtitle="Overall profit in base currency"
           icon={<Wallet size={20} />}
           color="blue"
         />

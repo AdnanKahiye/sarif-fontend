@@ -34,19 +34,82 @@ export default function TransactionDetailModal({ open, onClose, item }: Props) {
     item.transactionType === 4 ||
     /exchange|sarif/i.test(item.description || "");
 
-  const fromDetail = details.find((d: any) => d.entryType === 2 && !/profit|fee/i.test(d.accountName || ""));
-  const toDetail = details.find((d: any) => d.entryType === 1 && !/profit|fee/i.test(d.accountName || ""));
-  const profitDetail = details.find((d: any) => /profit|fee/i.test(d.accountName || ""));
+  const isProfitOrFee = (detail: any) =>
+    /profit|fee/i.test(detail.accountName || "");
 
-  const grossAmount = (toDetail?.amount || 0) + (profitDetail?.amount || 0);
+  // ✅ Correct logic:
+  // EntryType 1 = Debit = Cash In = You Received
+  // EntryType 2 = Credit = Cash Out = You Paid
+  const receivedDetail = details.find(
+    (d: any) => d.entryType === 1 && !isProfitOrFee(d)
+  );
 
-  const businessRows = isExchange && fromDetail && toDetail
+  const paidDetail = details.find(
+    (d: any) => d.entryType === 2 && !isProfitOrFee(d)
+  );
+
+  const profitDetail = details.find(
+    (d: any) => d.entryType === 2 && isProfitOrFee(d)
+  );
+
+  const grossAmount = (paidDetail?.amount || 0) + (profitDetail?.amount || 0);
+
+  const businessRows = isExchange && receivedDetail && paidDetail
     ? [
-        { label: "You Received", accountName: fromDetail.accountName, sign: "+", amount: fromDetail.amount, currencyId: fromDetail.currencyId, color: "text-emerald-600" },
-        { label: "You Paid", accountName: toDetail.accountName, sign: "-", amount: toDetail.amount, currencyId: toDetail.currencyId, color: "text-rose-600" },
-        ...(profitDetail ? [{ label: "Your Profit", accountName: profitDetail.accountName, sign: "+", amount: profitDetail.amount, currencyId: profitDetail.currencyId, color: "text-emerald-600" }] : []),
-        { label: "Customer Received", accountName: toDetail.accountName, sign: "+", amount: toDetail.amount, currencyId: toDetail.currencyId, color: "text-emerald-600", highlight: true },
-        ...(profitDetail ? [{ label: "Gross Before Profit", accountName: toDetail.accountName, sign: "+", amount: grossAmount, currencyId: toDetail.currencyId, color: "text-[#405189]" }] : []),
+        {
+          label: "You Received",
+          accountName: receivedDetail.accountName,
+          sign: "+",
+          amount: receivedDetail.amount,
+          currencyId: receivedDetail.currencyId,
+          currencyCode: receivedDetail.currencyCode,
+          color: "text-emerald-600",
+        },
+        {
+          label: "You Paid",
+          accountName: paidDetail.accountName,
+          sign: "-",
+          amount: paidDetail.amount,
+          currencyId: paidDetail.currencyId,
+          currencyCode: paidDetail.currencyCode,
+          color: "text-rose-600",
+        },
+        ...(profitDetail
+          ? [
+              {
+                label: "Your Profit",
+                accountName: profitDetail.accountName,
+                sign: "+",
+                amount: profitDetail.amount,
+                currencyId: profitDetail.currencyId,
+                currencyCode: profitDetail.currencyCode,
+                color: "text-emerald-600",
+              },
+            ]
+          : []),
+        {
+          label: "Customer Received",
+          accountName: paidDetail.accountName,
+          sign: "+",
+          amount: paidDetail.amount,
+          currencyId: paidDetail.currencyId,
+          currencyCode: paidDetail.currencyCode,
+          color: "text-emerald-600",
+          highlight: true,
+        },
+        ...(profitDetail
+          ? [
+              {
+                label: "Gross Before Profit",
+                accountName: paidDetail.accountName,
+                sign: "+",
+                amount: grossAmount,
+                currencyId: paidDetail.currencyId,
+                currencyCode: paidDetail.currencyCode,
+                color: "text-[#405189]",
+              },
+            ]
+          : []),
       ]
     : [];
 
@@ -108,7 +171,9 @@ export default function TransactionDetailModal({ open, onClose, item }: Props) {
                     </div>
                     <span className={`font-mono ${row.color}`}>
                       {row.sign} {formatAmount(row.amount)}
-                      <span className="text-[10px] text-gray-400 ml-1">{getCurrencyCode(row.currencyId)}</span>
+                      <span className="text-[10px] text-gray-400 ml-1">
+                        {row.currencyCode || getCurrencyCode(row.currencyId)}
+                      </span>
                     </span>
                   </div>
                 ))
@@ -121,7 +186,9 @@ export default function TransactionDetailModal({ open, onClose, item }: Props) {
                     </div>
                     <span className={`font-mono ${d.entryType === 1 ? "text-emerald-600" : "text-rose-600"}`}>
                       {d.entryType === 1 ? "+" : "-"} {formatAmount(d.amount)}
-                      <span className="text-[10px] text-gray-400 ml-1">{getCurrencyCode(d.currencyId)}</span>
+                      <span className="text-[10px] text-gray-400 ml-1">
+                        {d.currencyCode || getCurrencyCode(d.currencyId)}
+                      </span>
                     </span>
                   </div>
                 ))

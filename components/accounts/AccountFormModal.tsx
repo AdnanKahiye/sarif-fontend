@@ -19,6 +19,7 @@ export interface AccountFormData {
     currencyId: number;
 }
 
+
 interface Props {
     open: boolean;
     mode: "add" | "edit";

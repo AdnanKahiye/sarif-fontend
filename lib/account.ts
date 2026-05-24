@@ -3,6 +3,7 @@
 // import { data } from "framer-motion/m";
 // import { get } from "http";
 
+// import { create } from "domain";
 import api from "./api";
 
 export const AccountService = {
@@ -12,7 +13,7 @@ export const AccountService = {
     return api.get(`/Account/currency?page=${page}&pageSize=${pageSize}&search=${search}`);
   },
 
-  CreateCurrency(data: any) {  
+  CreateCurrency(data: any) {
     return api.post("/Account/currency", data);
   },
 
@@ -39,6 +40,21 @@ export const AccountService = {
 
   deleteExchangeRate(id: string) {
     return api.delete(`/Account/exchange-rate/${id}`);
+  },
+
+
+  // Ku dar method-kaan gudaha exchange-settings
+
+  getExchangeSettings() {
+    return api.get("/Account/exchange-settings");
+  },
+
+  createExchangeSetting(data: any) {
+    return api.post("/Account/exchange-settings", data);
+  },
+
+  updateExchangeSetting(id: number, data: any) {
+    return api.put(`/Account/exchange-settings/${id}`, data);
   },
 
   // --- ACCOUNTS (Hadda waa ay isku mid yihiin magacyada Table-kaaga) ---
@@ -69,88 +85,88 @@ export const AccountService = {
 
 
 
-getBalanceAccountSummary(
-  page: number = 1, 
-  pageSize: number = 10, 
-  search: string = "", 
-  fromDate?: string, // Taariikhda bilowga
-  toDate?: string,   // Taariikhda dhamaadka
-  accountType?: string
-) {
-  const params = new URLSearchParams({ 
-    page: page.toString(), 
-    pageSize: pageSize.toString(), 
-    search 
-  });
+  getBalanceAccountSummary(
+    page: number = 1,
+    pageSize: number = 10,
+    search: string = "",
+    fromDate?: string, // Taariikhda bilowga
+    toDate?: string,   // Taariikhda dhamaadka
+    accountType?: string
+  ) {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      pageSize: pageSize.toString(),
+      search
+    });
 
-  // Ku dar filtarrada haddii ay jiraan
-  if (fromDate) params.append("fromDate", fromDate);
-  if (toDate) params.append("toDate", toDate);
-  if (accountType) params.append("accountType", accountType);
+    // Ku dar filtarrada haddii ay jiraan
+    if (fromDate) params.append("fromDate", fromDate);
+    if (toDate) params.append("toDate", toDate);
+    if (accountType) params.append("accountType", accountType);
 
-  return api.get(`/Account/balances-summary?${params.toString()}`);
-},
+    return api.get(`/Account/balances-summary?${params.toString()}`);
+  },
 
-getProfitLoss(fromDate?: string, toDate?: string) {
-  const params = new URLSearchParams();
-  if (fromDate) params.append("fromDate", fromDate);
-  if (toDate) params.append("toDate", toDate);
-  return api.get(`/Account/profit-loss?${params.toString()}`);
-},
-
-
-getDailyReport(page: number, pageSize: number, fromDate?: string, toDate?: string) {
-   return api.get(`/Account/daily-report?page=${page}&pageSize=${pageSize}&fromDate=${fromDate}&toDate=${toDate}`);
-},
-
-getProfitDetailLoss(page: number, pageSize: number, fromDate?: string, toDate?: string) {
-  const params = new URLSearchParams();
-  params.append("page", page.toString());
-  params.append("pageSize", pageSize.toString());
-  if (fromDate) params.append("fromDate", fromDate);
-  if (toDate) params.append("toDate", toDate);
-  return api.get(`/Account/profit-loss-detailed?${params.toString()}`);
-},
+  getProfitLoss(fromDate?: string, toDate?: string) {
+    const params = new URLSearchParams();
+    if (fromDate) params.append("fromDate", fromDate);
+    if (toDate) params.append("toDate", toDate);
+    return api.get(`/Account/profit-loss?${params.toString()}`);
+  },
 
 
-// Si aad u hubiso in URL-ku uu sax yahay:
-getAccountStatement(
-  id: string, 
-  page: number, 
-  pageSize: number, 
-  entryType?: number | null, 
-  fromDate?: string, 
-  toDate?: string
-) {
-  // Waxaan isticmaalayaa URLSearchParams si aan u dhisno query string sax ah
-  const params = new URLSearchParams();
-  params.append("page", page.toString());
-  params.append("pageSize", pageSize.toString());
-  
-  if (entryType !== undefined && entryType !== null) {
-    params.append("entryType", entryType.toString());
-  }
-  if (fromDate) params.append("fromDate", fromDate);
-  if (toDate) params.append("toDate", toDate);
-  // ID-ga wuxuu ku jiraa URL-ka (path parameter), inta kalena waa query params
-  return api.get(`/Account/account-statement/${id}?${params.toString()}`);
-},
+  getDailyReport(page: number, pageSize: number, fromDate?: string, toDate?: string) {
+    return api.get(`/Account/daily-report?page=${page}&pageSize=${pageSize}&fromDate=${fromDate}&toDate=${toDate}`);
+  },
+
+  getProfitDetailLoss(page: number, pageSize: number, fromDate?: string, toDate?: string) {
+    const params = new URLSearchParams();
+    params.append("page", page.toString());
+    params.append("pageSize", pageSize.toString());
+    if (fromDate) params.append("fromDate", fromDate);
+    if (toDate) params.append("toDate", toDate);
+    return api.get(`/Account/profit-loss-detailed?${params.toString()}`);
+  },
 
 
-getAccountsLookup(){
+  // Si aad u hubiso in URL-ku uu sax yahay:
+  getAccountStatement(
+    id: string,
+    page: number,
+    pageSize: number,
+    entryType?: number | null,
+    fromDate?: string,
+    toDate?: string
+  ) {
+    // Waxaan isticmaalayaa URLSearchParams si aan u dhisno query string sax ah
+    const params = new URLSearchParams();
+    params.append("page", page.toString());
+    params.append("pageSize", pageSize.toString());
+
+    if (entryType !== undefined && entryType !== null) {
+      params.append("entryType", entryType.toString());
+    }
+    if (fromDate) params.append("fromDate", fromDate);
+    if (toDate) params.append("toDate", toDate);
+    // ID-ga wuxuu ku jiraa URL-ka (path parameter), inta kalena waa query params
+    return api.get(`/Account/account-statement/${id}?${params.toString()}`);
+  },
+
+
+  getAccountsLookup() {
     return api.get("/Account/accounts-lookup");
   },
 
-getAccountExchangeLookup(){
+  getAccountExchangeLookup() {
     return api.get("/Account/account-exchange-lookup");
   },
 
-  getAccountExpensesLookup(){
+  getAccountExpensesLookup() {
     return api.get("/Account/account-expenses-lookup");
   },
 
 
-  getCurrencyLookup(){
+  getCurrencyLookup() {
     return api.get("/Account/currency-lookup");
   },
 
@@ -164,16 +180,16 @@ getAccountExchangeLookup(){
 
 
 
-    createExchange(data: any) {   
+  createExchange(data: any) {
     //console.log("Creating user with data:", data);
     return api.post("/Account/transaction", data);
   },
 
   // Ku dar method-kaan gudaha AccountService
   getExchanges(
-    page: number = 1, 
-    pageSize: number = 10, 
-    fromDate?: string, 
+    page: number = 1,
+    pageSize: number = 10,
+    fromDate?: string,
     toDate?: string
   ) {
     const params = new URLSearchParams({
@@ -188,16 +204,16 @@ getAccountExchangeLookup(){
   },
 
 
-    updateExchange(id: string, data: any ) {
-  return api.put(`/Account/exchange/${id}`, data);
-},
+  updateExchange(id: string, data: any) {
+    return api.put(`/Account/exchange/${id}`, data);
+  },
 
 
-    // Ku dar method-kaan gudaha AccountService
+  // Ku dar method-kaan gudaha AccountService
   getDeposits(
-    page: number = 1, 
-    pageSize: number = 10, 
-    fromDate?: string, 
+    page: number = 1,
+    pageSize: number = 10,
+    fromDate?: string,
     toDate?: string
   ) {
     const params = new URLSearchParams({
@@ -212,23 +228,23 @@ getAccountExchangeLookup(){
   },
 
 
-      updateDeposit(id: string, data: any ) {
-  return api.put(`/Account/deposit/${id}`, data);
-},
-    createDeposit(data: any) {   
+  updateDeposit(id: string, data: any) {
+    return api.put(`/Account/deposit/${id}`, data);
+  },
+  createDeposit(data: any) {
     //console.log("Creating user with data:", data);
-   return api.post("/Account/transaction", data);  
-   },
+    return api.post("/Account/transaction", data);
+  },
 
 
 
 
 
-     // Ku dar method-kaan gudaha AccountService
+  // Ku dar method-kaan gudaha AccountService
   getWithdrawals(
-    page: number = 1, 
-    pageSize: number = 10, 
-    fromDate?: string, 
+    page: number = 1,
+    pageSize: number = 10,
+    fromDate?: string,
     toDate?: string
   ) {
     const params = new URLSearchParams({
@@ -243,21 +259,21 @@ getAccountExchangeLookup(){
   },
 
 
-      updateWithdrawal(id: string, data: any ) {
-  return api.put(`/Account/deposit/${id}`, data);
-},
-    createWithdraw(data: any) {   
+  updateWithdrawal(id: string, data: any) {
+    return api.put(`/Account/deposit/${id}`, data);
+  },
+  createWithdraw(data: any) {
     //console.log("Creating user with data:", data);
-   return api.post("/Account/transaction", data);  
-   },
+    return api.post("/Account/transaction", data);
+  },
 
 
 
-        // Ku dar method-kaan gudaha AccountService
+  // Ku dar method-kaan gudaha AccountService
   getExpenses(
-    page: number = 1, 
-    pageSize: number = 10, 
-    fromDate?: string, 
+    page: number = 1,
+    pageSize: number = 10,
+    fromDate?: string,
     toDate?: string
   ) {
     const params = new URLSearchParams({
@@ -272,21 +288,24 @@ getAccountExchangeLookup(){
   },
 
 
-      updateExpense(id: string, data: any ) {
-  return api.put(`/Account/expense/${id}`, data);
-},
-    createExpense(data: any) {   
+  updateExpense(id: string, data: any) {
+    return api.put(`/Account/expense/${id}`, data);
+  },
+  createExpense(data: any) {
     //console.log("Creating user with data:", data);
-   return api.post("/Account/transaction", data);  
-   },
+    return api.post("/Account/transaction", data);
+  },
+
+
+  // Ku dar method-kaan gudaha exchange-settings
 
 
 
-         // Ku dar method-kaan gudaha AccountService
+  // Ku dar method-kaan gudaha AccountService
   getLoans(
-    page: number = 1, 
-    pageSize: number = 10, 
-    fromDate?: string, 
+    page: number = 1,
+    pageSize: number = 10,
+    fromDate?: string,
     toDate?: string
   ) {
     const params = new URLSearchParams({
@@ -301,21 +320,21 @@ getAccountExchangeLookup(){
   },
 
 
-      updateLoan(id: string, data: any ) {
-  return api.put(`/Account/loan/${id}`, data);
-},
-    createLoan(data: any) {   
+  updateLoan(id: string, data: any) {
+    return api.put(`/Account/loan/${id}`, data);
+  },
+  createLoan(data: any) {
     //console.log("Creating user with data:", data);
-   return api.post("/Account/transaction", data);  
-   },
+    return api.post("/Account/transaction", data);
+  },
 
 
 
-            // Ku dar method-kaan gudaha AccountService
+  // Ku dar method-kaan gudaha AccountService
   getTransfers(
-    page: number = 1, 
-    pageSize: number = 10, 
-    fromDate?: string, 
+    page: number = 1,
+    pageSize: number = 10,
+    fromDate?: string,
     toDate?: string
   ) {
     const params = new URLSearchParams({
@@ -330,21 +349,21 @@ getAccountExchangeLookup(){
   },
 
 
-      updateTransfer(id: string, data: any ) {
-  return api.put(`/Account/transfer/${id}`, data);
-},
-    createTransfer(data: any) {   
+  updateTransfer(id: string, data: any) {
+    return api.put(`/Account/transfer/${id}`, data);
+  },
+  createTransfer(data: any) {
     //console.log("Creating user with data:", data);
-   return api.post("/Account/transaction", data);  
-   },
+    return api.post("/Account/transaction", data);
+  },
 
 
-   
-            // Ku dar method-kaan gudaha AccountService
+
+  // Ku dar method-kaan gudaha AccountService
   getRepayments(
-    page: number = 1, 
-    pageSize: number = 10, 
-    fromDate?: string, 
+    page: number = 1,
+    pageSize: number = 10,
+    fromDate?: string,
     toDate?: string
   ) {
     const params = new URLSearchParams({
@@ -359,24 +378,24 @@ getAccountExchangeLookup(){
   },
 
 
-      updateRepayment(id: string, data: any ) {
-  return api.put(`/Account/loanPayment/${id}`, data);
-},
-    createRepayment(data: any) {   
+  updateRepayment(id: string, data: any) {
+    return api.put(`/Account/loanPayment/${id}`, data);
+  },
+  createRepayment(data: any) {
     //console.log("Creating user with data:", data);
-   return api.post("/Account/transaction", data);  
-   },
+    return api.post("/Account/transaction", data);
+  },
 
-   getAccountRevenueLookup() {
-  return api.get("/Account/account-revenue-lookup");
-} ,
+  getAccountRevenueLookup() {
+    return api.get("/Account/account-revenue-lookup");
+  },
 
 
-         // Ku dar method-kaan gudaha AccountService
+  // Ku dar method-kaan gudaha AccountService
   getRevenues(
-    page: number = 1, 
-    pageSize: number = 10, 
-    fromDate?: string, 
+    page: number = 1,
+    pageSize: number = 10,
+    fromDate?: string,
     toDate?: string
   ) {
     const params = new URLSearchParams({
@@ -391,12 +410,12 @@ getAccountExchangeLookup(){
   },
 
 
-      updateRevenue(id: string, data: any ) {
-  return api.put(`/Account/revenue/${id}`, data);
-},
-    createRevenue(data: any) {   
+  updateRevenue(id: string, data: any) {
+    return api.put(`/Account/revenue/${id}`, data);
+  },
+  createRevenue(data: any) {
     //console.log("Creating user with data:", data);
-   return api.post("/Account/transaction", data);  
-   },
+    return api.post("/Account/transaction", data);
+  },
 
 };

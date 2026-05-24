@@ -3,13 +3,10 @@
 import React, { useEffect, useState, useCallback } from "react";
 import AccountFormModal, { AccountFormData } from "./AccountFormModal";
 import ConfirmDeleteModal from "../ui/Model/ConfirmDeleteModal";
+import { AccountService } from "@/lib/account";
 import toast from "react-hot-toast";
 import { usePermission } from "@/context/PermissionContext";
-import { Search, Loader2 } from "lucide-react"; // Waxaan ku daray Loader2 si loo muujiyo loading-ka
-import { AccountService } from "@/lib/account";
-import { i } from "framer-motion/client";
-
-
+import { Search, Loader2 } from "lucide-react"; 
 
 interface accountDto {
     id: string;
@@ -38,7 +35,7 @@ export default function AccountTable() {
 
     const [openModal, setOpenModal] = useState(false);
     const [mode, setMode] = useState<"add" | "edit">("add");
-    const [selectedCurrency, setSelectedCurrency] = useState<accountDto | null>(null);
+    const [selectedAccount, setSelectedAccount] = useState<accountDto | null>(null);
     const [openDelete, setOpenDelete] = useState(false);
     const [deleting, setDeleting] = useState(false);
 
@@ -81,9 +78,9 @@ export default function AccountTable() {
                 await AccountService.createAccount(data);
                 toast.success("Account created successfully");
             } else {
-                if (!selectedCurrency) return;
-                await AccountService.updateAccount(selectedCurrency.id, data);
-                toast.success("Account updated");
+                if (!selectedAccount) return;
+                await AccountService.updateAccount(selectedAccount.id, data);
+                toast.success("Profile updated");
             }
             setOpenModal(false);
             loadAccounts(currentPage, search);
@@ -93,10 +90,10 @@ export default function AccountTable() {
     };
 
     const confirmDelete = async () => {
-        if (!selectedCurrency) return;
+        if (!selectedAccount) return;
         setDeleting(true);
         try {
-            await AccountService.deleteAccount(selectedCurrency.id);
+            await AccountService.deleteAccount(selectedAccount.id);
             toast.success("Account removed");
             setOpenDelete(false);
             loadAccounts(currentPage, search);
@@ -134,10 +131,10 @@ export default function AccountTable() {
                         <div className="flex items-center gap-2 w-full md:w-auto">
                             {canAdd && (
                                 <button
-                                    onClick={() => { setMode("add"); setSelectedCurrency(null); setOpenModal(true); }}
+                                    onClick={() => { setMode("add"); setSelectedAccount(null); setOpenModal(true); }}
                                     className="bg-[#0ab39c] hover:bg-[#099885] text-white px-4 py-2 rounded text-[13px] flex items-center gap-1 transition-all"
                                 >
-                                    <span className="text-lg">+</span> Add Accounts
+                                    <span className="text-lg">+</span> Add Account
                                 </button>
                             )}
                         </div>
@@ -166,14 +163,9 @@ export default function AccountTable() {
                             <thead className="bg-[#f3f6f9] dark:bg-gray-700/50 text-[#878a99] text-[13px] font-bold uppercase border-y border-gray-200 dark:border-gray-700">
                                 <tr>
                                     <th className="p-3 w-10 text-center"><input type="checkbox" className="rounded border-gray-300" /></th>
-                                    {/* <th className="p-3">ID</th> */}
-                                    {/* <th className="p-3">Id</th> */}
                                     <th className="p-3">Name</th>
-                                    <th className="p-3 text-center">Account Type</th>
-                                    {/* <th className="p-3 text-center">Reference</th> */}
-                                    <th className="p-3 text-center">Currency</th>
-                                    <th className="p-3 text-center">Agency</th>
-                                    {/* <th className="p-3 text-center">User</th> */}
+                                    <th className="p-3">Account name </th>
+                                    <th className="p-3">Currency Name</th>
 
                                     <th className="p-3 text-center">Action</th>
                                 </tr>
@@ -183,26 +175,24 @@ export default function AccountTable() {
                                     <SkeletonRows />
                                 ) : accounts.length === 0 ? (
                                     <tr>
-                                        <td colSpan={8} className="p-6 text-center text-gray-500">Xog lama helin</td>
+                                        <td colSpan={6} className="p-6 text-center text-gray-500">Xog lama helin</td>
                                     </tr>
                                 ) : (
                                     accounts.map((account) => (
                                         <tr key={account.id} className="text-[13px] text-[#212529] dark:text-gray-300 hover:bg-gray-50/50 dark:hover:bg-gray-800/50">
                                             <td className="p-3 text-center"><input type="checkbox" className="rounded border-gray-300" /></td>
-                                            {/* <td>{account.id}</td> */}
-                                            <td>{account.name}</td>
-                                            <td>{account.accountType ?? "N/A"}</td>
-                                            {/* <td>{account.referenceId ?? "N/A"}</td> */}
-                                            <td>{account.currencyName}</td>
-                                            <td>{account.agencyName}</td>
-                                            {/* <td>{account.userName}</td> */}
+                                            <td className="p-3 font-medium">{account.name}</td>
+                                            <td className="p-3 text-[#878a99]">{account.accountType}</td>
+                                            {/* <td className="p-3">{account.referenceId ? 'Yes' : 'No'}</td> */}
+                                            <td className="p-3">{account.currencyName}</td>
+                                            
                                             <td className="p-3">
                                                 <div className="flex items-center justify-center gap-2">
                                                     {canEdit && (
-                                                        <button onClick={() => { setMode("edit"); setSelectedCurrency(account); setOpenModal(true); }} className="bg-[#299cdb] text-white px-3 py-1 rounded text-[11px]">Edit</button>
+                                                        <button onClick={() => { setMode("edit"); setSelectedAccount(account); setOpenModal(true); }} className="bg-[#299cdb] text-white px-3 py-1 rounded text-[11px]">Edit</button>
                                                     )}
                                                     {canDelete && (
-                                                        <button onClick={() => { setSelectedCurrency(account); setOpenDelete(true); }} className="bg-[#f06548] text-white px-3 py-1 rounded text-[11px]">Remove</button>
+                                                        <button onClick={() => { setSelectedAccount(account); setOpenDelete(true); }} className="bg-[#f06548] text-white px-3 py-1 rounded text-[11px]">Remove</button>
                                                     )}
                                                 </div>
                                             </td>
@@ -249,12 +239,14 @@ export default function AccountTable() {
             <AccountFormModal
                 open={openModal}
                 mode={mode}
-                initialData={selectedCurrency ? ({
-                    name: selectedCurrency.name,
-                    accountType: selectedCurrency.accountType ?? 0,
-                    referenceId: selectedCurrency.referenceId ?? "",
-                    currencyId: selectedCurrency.currencyId ?? "",
-                } as AccountFormData) : undefined}
+                initialData={selectedAccount ? ({
+                    id: selectedAccount.id,
+                    name: selectedAccount.name,
+                    accountType: selectedAccount.accountType ?? 0,
+                    referenceId: selectedAccount.referenceId ?? null,
+                    currencyId: selectedAccount.currencyId,
+
+                } as any) : undefined}
                 onClose={() => setOpenModal(false)}
                 onSubmit={handleFormSubmit}
             />

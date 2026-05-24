@@ -8,66 +8,70 @@ import { SetupService } from "@/lib/setup";
 import { AccountService } from "@/lib/account";
 
 
-
-
-
-export interface AccountFormData {
-    id: string;
-    name: string;
-    accountType: number;
-    referenceId:   null;
+export interface ExchangeFormData {
+    id: number;
     currencyId: number;
+    feeRate: number;
+    profitRate: number;
 }
 
 interface Props {
     open: boolean;
     mode: "add" | "edit";
-    initialData?: AccountFormData;
+    initialData?: ExchangeFormData;
     onClose: () => void;
-    onSubmit: (data: AccountFormData) => void;
+    onSubmit: (data: ExchangeFormData) => void;
 }
 
-const emptyForm: AccountFormData = {
-    id: "",
-    name: "",
-    accountType: 0,
-    referenceId: null,
+const emptyForm: ExchangeFormData = {
+    id: 0,
     currencyId: 0,
+    feeRate: 0,
+    profitRate: 0,
 };
 
-export default function AccountFormModal({ open, mode, initialData, onClose, onSubmit }: Props) {
-    const [form, setForm] = useState<AccountFormData>(emptyForm);
-    const [errors, setErrors] = useState<Partial<Record<keyof AccountFormData, string>>>({});
+export default function ExchangeFormModal({ open, mode, initialData, onClose, onSubmit }: Props) {
+    const [form, setForm] = useState<ExchangeFormData>(emptyForm);
+    const [errors, setErrors] = useState<Partial<Record<keyof ExchangeFormData, string>>>({});
     const [loading, setLoading] = useState(false);
     const [agencies, setAgencies] = useState<{ id: string; name: string }[]>([]);
     const [agencyLoading, setAgencyLoading] = useState(false);
     const [currencies, setCurrencies] = useState<{ id: number; name: string }[]>([]);
-    const [currenciesLoading, setCurrenciesLoading] = useState(false);
+    const [currencyLoading, setCurrencyLoading] = useState(false);
 
-    // FETCH Agencies FROM API
+    // FETCH Agencies & Currencies FROM API
     useEffect(() => {
-        const fetchCats = async () => {
+        const fetchData = async () => {
             try {
-                setAgencyLoading(true);
-                const res = await SetupService.getAgencies(1, 100);
-                if (res.data?.success) {
-                    const apiResponse = res.data?.data;
-                    setAgencies(apiResponse.data || []); // Assuming the API returns { success: boolean, data: { data: Agency[] } }
-                }
+                console.log("MODAL OPEN:", open);
+
+                const currenciesRes = await AccountService.getCurrencyLookup();
+
+                console.log("CURRENCIES RAW:", currenciesRes.data);
+
+                // 🔥 FIX HERE
+                const list = currenciesRes.data?.data || [];
+
+                setCurrencies(list);
+
             } catch (err) {
-                console.error("Failed to load agencies", err);
-            } finally {
-                setAgencyLoading(false);
+                console.error("Currency fetch error:", err);
+                setCurrencies([]);
             }
         };
 
-        if (open) fetchCats(); // Fetch only when modal opens
+        if (open) fetchData();
     }, [open]);
-
     useEffect(() => {
         if (open) {
             if (mode === "edit" && initialData) {
-                setForm(initialData);
+                setForm({
+                    ...initialData,
+                    id: initialData.id ?? 0,
+                    currencyId: initialData.currencyId ?? 0,
+                    feeRate: initialData.feeRate ?? 0,
+                    profitRate: initialData.profitRate ?? 0,
+                });
             } else {
                 setForm(emptyForm);
             }
@@ -75,18 +79,25 @@ export default function AccountFormModal({ open, mode, initialData, onClose, onS
         }
     }, [mode, initialData, open]);
 
-    // Changed 'v' type to 'any' or 'string | boolean' to handle the checkbox/select
-    const update = (k: keyof AccountFormData, v: string | boolean) => {
-        setForm((p) => ({ ...p, [k]: v }));
+    // Handle updates and convert strings to numbers for numeric fields
+    const update = (k: keyof ExchangeFormData, v: string | boolean) => {
+        let value: any = v;
+        if (k === "currencyId") {
+            value = Number(v) || 0;
+        } else {
+            // feeRate and profitRate
+            value = Number(v) || 0;
+        }
+
+        setForm((p) => ({ ...p, [k]: value }));
         if (errors[k]) setErrors((prev) => ({ ...prev, [k]: "" }));
     };
 
     const validate = () => {
         const e: typeof errors = {};
-        
-        if (!form.name.trim()) e.name = "Name is required";
-        if (!form.accountType) e.accountType = "Account Type is required";
         if (!form.currencyId) e.currencyId = "Currency is required";
+        if (!form.feeRate) e.feeRate = "Fee Rate is required";
+        if (!form.profitRate) e.profitRate = "Profit Rate is required";
 
         setErrors(e);
         return !Object.keys(e).length;
@@ -96,41 +107,13 @@ export default function AccountFormModal({ open, mode, initialData, onClose, onS
         if (e.key === "Escape") onClose();
     }, [onClose]);
 
-
-
-    useEffect(() => {
-        const loadCurrencies = async () => {
-            try {
-                setCurrenciesLoading(true);
-
-                const res = await AccountService.getCurrencyLookup();
-
-
-                if (res.data?.success) {
-                    setCurrencies(res.data.data || []);
-                }
-            } catch (err) {
-                console.error(err);
-            } finally {
-                setCurrenciesLoading(false);
-            }
-        };
-
-        if (open) {
-            loadCurrencies();
-        }
-    }, [open]);
-
     useEffect(() => {
         if (open) window.addEventListener("keydown", handleEsc);
         return () => window.removeEventListener("keydown", handleEsc);
     }, [open, handleEsc]);
 
     const submit = async () => {
-
-
         if (!validate() || loading) return;
-
         setLoading(true);
         try {
             await onSubmit(form);
@@ -152,7 +135,7 @@ export default function AccountFormModal({ open, mode, initialData, onClose, onS
             >
                 <div className="relative p-6 border-b border-gray-100 dark:border-gray-800 text-center">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                        {mode === "add" ? "Add New Account" : "Edit Account Profile"}
+                        {mode === "add" ? "Add New Exchange Setting" : "Edit Exchange Setting"}
                     </h3>
                     <button
                         onClick={onClose}
@@ -164,54 +147,37 @@ export default function AccountFormModal({ open, mode, initialData, onClose, onS
 
                 <div className="p-6 space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <Field label="Account Name" required error={errors.name}>
-                            <Input value={form.name} onChange={(e) => update("name", e.target.value)} placeholder="Account Name" />
-                        </Field>
-
-                        <Field label="Account Type" required error={errors.accountType}>
-                            <select
-                                value={String(form.accountType)}
-                                onChange={(e) => update("accountType", (e.target.value))}
-                                className={selectClassName}
-                            >
-                                <option value={0}>Select</option>
-                                <option value={1}>Cash</option>
-                                <option value={2}>Bank</option>
-                                <option value={3}>Wallet</option>
-                                <option value={4}>Customer</option>
-                                <option value={5}>Loan</option>
-                                <option value={6}>Expense</option>
-                                <option value={7}>Revenue</option>
-                                <option value={8}>Capital</option>
-                                <option value={9}>Receivable</option>
-                                <option value={10}>Payable</option>
-
-                            </select>
-                        </Field>
-
-                        <Field label="Reference" required error={errors.referenceId}>
-                            <input
-                                type="text"
-                                value={form.referenceId || ""}
-                                onChange={(e) => update("referenceId", e.target.value)} placeholder="Reference"
-                                className={selectClassName}
-                            >
-                            </input>
-                        </Field>
-
                         <Field label="Currency" required error={errors.currencyId}>
                             <select
-                                value={String(form.currencyId)}
-                                onChange={(e) => update("currencyId", (e.target.value))}
+                                value={form.currencyId}
+                                onChange={(e) => update("currencyId", e.target.value)}
                                 className={selectClassName}
                             >
-                                <option value="">Select Currency</option>
-                                {currencies?.map((currency) => (
-                                    <option key={currency.id} value={String(currency.id)}>
-                                        {currency.name}
+                                <option value="0">Select Currency</option>
+                                {currencies?.map((currency: any) => (
+                                    <option key={currency.id} value={currency.id}>
+                                        {currency.code || currency.name || currency.currencyCode}
                                     </option>
                                 ))}
                             </select>
+                        </Field>
+
+                        <Field label="Fee Rate (%)" required error={errors.feeRate}>
+                            <Input
+                                type="number"
+                                value={form.feeRate}
+                                onChange={(e) => update("feeRate", (e.target.value))}
+                                placeholder="Enter fee rate"
+                            />
+                        </Field>
+
+                        <Field label="Profit Rate (%)" required error={errors.profitRate}>
+                            <Input
+                                type="number"
+                                value={form.profitRate}
+                                onChange={(e) => update("profitRate", (e.target.value))}
+                                placeholder="Enter profit rate"
+                            />
                         </Field>
                     </div>
                 </div>

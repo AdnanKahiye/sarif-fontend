@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import Select from "react-select";
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
+import { useSearchParams } from "next/navigation";
 import { X } from "lucide-react";
 import { AccountService } from "@/lib/account";
 
@@ -41,9 +42,18 @@ export default function WithdrawFormModal({
   const [form, setForm] = useState<CreateWithdrawRequest>(emptyForm);
   const [accounts, setAccounts] = useState<any[]>([]);
   const [errors, setErrors] = useState<any>({});
+  const searchParams = useSearchParams();
+  const customerId = searchParams.get("customerId") || "";
+
+  useEffect(() => {
+    const idFromUrl = searchParams.get("customerId");
+    if (idFromUrl) {
+      setForm((prev) => ({ ...prev, withdraw: { ...prev.withdraw, customerId: idFromUrl } }));
+    }
+  }, [searchParams]);
 
   /* ================================
-     LOAD ACCOUNTS
+     withdraw ACCOUNTS
   ================================= */
   useEffect(() => {
     if (!open) return;
@@ -53,15 +63,12 @@ export default function WithdrawFormModal({
     });
   }, [open]);
 
-  /* ================================
-     RESET FORM
-  ================================= */
-  useEffect(() => {
-    if (!open) {
-      setForm(emptyForm);
-      setErrors({});
-    }
-  }, [open]);
+  <WithdrawFormModal
+    open={open}
+    customerId={customerId}  // ← sidaan
+  />
+
+
 
   /* ================================
      UPDATE

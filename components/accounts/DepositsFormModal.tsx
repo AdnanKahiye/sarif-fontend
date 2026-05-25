@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import Select from "react-select";
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
+import { useSearchParams } from "next/navigation";
 import { X } from "lucide-react";
 import { AccountService } from "@/lib/account";
 
@@ -38,12 +39,24 @@ export default function DepositFormModal({
   onClose,
   onSubmit,
 }: any) {
+
+
   const [form, setForm] = useState<CreateDepositRequest>(emptyForm);
   const [accounts, setAccounts] = useState<any[]>([]);
   const [errors, setErrors] = useState<any>({});
+  
+  const searchParams = useSearchParams();
+  const customerId = searchParams.get("customerId") || "";
+
+  useEffect(() => {
+    const idFromUrl = searchParams.get("customerId");
+    if (idFromUrl) {
+      setForm((prev) => ({ ...prev, deposit: { ...prev.deposit, customerId: idFromUrl } }));
+    }
+  }, [searchParams]);
 
   /* ================================
-     LOAD ACCOUNTS
+     deposit ACCOUNTS
   ================================= */
   useEffect(() => {
     if (!open) return;
@@ -52,6 +65,13 @@ export default function DepositFormModal({
       setAccounts(res.data?.data || []);
     });
   }, [open]);
+
+  <DepositFormModal
+    open={open}
+    customerId={customerId}  // ← sidaan
+  />
+
+
 
   /* ================================
      VALIDATION
@@ -96,12 +116,7 @@ export default function DepositFormModal({
   /* ================================
      RESET FORM ON CLOSE
   ================================= */
-  useEffect(() => {
-    if (!open) {
-      setForm(emptyForm);
-      setErrors({});
-    }
-  }, [open]);
+  
 
   if (!open) return null;
 

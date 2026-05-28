@@ -4,16 +4,15 @@ import React, { useEffect, useState } from "react";
 import Select from "react-select";
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
-import { useSearchParams } from "next/navigation";
 import { X } from "lucide-react";
 import { AccountService } from "@/lib/account";
 
 /* ================================
-   MODEL (CLEAN)
+   MODEL
 ================================ */
 export interface CreateWithdrawRequest {
   transactionType: number;
-  description: string; // ✅ used as sender → receiver comment
+  description: string;
   withdraw: {
     accountId: string;
     customerId: string;
@@ -34,45 +33,57 @@ const emptyForm: CreateWithdrawRequest = {
   },
 };
 
+/* ================================
+   PROPS
+================================ */
+interface WithdrawFormModalProps {
+  open: boolean;
+  onClose: () => void;
+  onSubmit: (form: CreateWithdrawRequest) => void;
+  customerId?: string;
+  customerName?: string;
+}
+
 export default function WithdrawFormModal({
   open,
   onClose,
   onSubmit,
-}: any) {
+  customerId = "",
+  customerName = "",
+}: WithdrawFormModalProps) {
+
   const [form, setForm] = useState<CreateWithdrawRequest>(emptyForm);
   const [accounts, setAccounts] = useState<any[]>([]);
   const [errors, setErrors] = useState<any>({});
-  const searchParams = useSearchParams();
-  const customerId = searchParams.get("customerId") || "";
-
-  useEffect(() => {
-    const idFromUrl = searchParams.get("customerId");
-    if (idFromUrl) {
-      setForm((prev) => ({ ...prev, withdraw: { ...prev.withdraw, customerId: idFromUrl } }));
-    }
-  }, [searchParams]);
 
   /* ================================
-     withdraw ACCOUNTS
-  ================================= */
+     MARKA MODAL FURMO
+  ================================ */
   useEffect(() => {
     if (!open) return;
+    setForm({
+      ...emptyForm,
+      withdraw: {
+        ...emptyForm.withdraw,
+        customerId: customerId,
+      },
+    });
+    setErrors({});
+  }, [open, customerId]);
 
+  /* ================================
+     LOAD ACCOUNTS
+  ================================ */
+  useEffect(() => {
+    if (!open) return;
     AccountService.getAccountExchangeLookup().then((res) => {
       setAccounts(res.data?.data || []);
     });
   }, [open]);
 
-  <WithdrawFormModal
-    open={open}
-    customerId={customerId}  // ← sidaan
-  />
-
-
-
   /* ================================
-     UPDATE
-  ================================= */
+     UPDATE HANDLER
+  ================================ */
   const updateWithdraw = (key: keyof CreateWithdrawRequest["withdraw"], value: any) => {
     setForm((prev) => ({
       ...prev,
@@ -84,30 +95,21 @@ export default function WithdrawFormModal({
   };
 
   /* ================================
-     VALIDATION (FIXED)
-  ================================= */
+     VALIDATION
+  ================================ */
   const validate = () => {
     const e: any = {};
-
-    if (!form.withdraw.accountId)
-      e.account = "Account is required";
-
-    if (!form.withdraw.customerId)
-      e.customer = "Customer ID is required";
-
-    if (!form.withdraw.amount || form.withdraw.amount <= 0)
-      e.amount = "Amount must be greater than 0";
-
-    if (!form.description)
-      e.description = "Comment is required";
-
+    if (!form.withdraw.accountId) e.account = "Account is required";
+    if (!form.withdraw.customerId) e.customer = "Customer ID is required";
+    if (!form.withdraw.amount || form.withdraw.amount <= 0) e.amount = "Amount must be greater than 0";
+    if (!form.description) e.description = "Comment is required";
     setErrors(e);
     return Object.keys(e).length === 0;
   };
 
   /* ================================
      OPTIONS
-  ================================= */
+  ================================ */
   const accountOptions = accounts.map((a) => ({
     value: a.id,
     label: a.name,
@@ -121,7 +123,14 @@ export default function WithdrawFormModal({
 
         {/* HEADER */}
         <div className="relative flex items-center justify-center mb-4">
-          <h3 className="font-bold text-lg">Withdraw</h3>
+          <div className="text-center">
+            <h3 className="font-bold text-lg">Withdraw</h3>
+            {customerName && (
+              <p className="text-sm text-gray-500 mt-0.5">
+                Customer: <span className="font-semibold text-[#405189]">{customerName}</span>
+              </p>
+            )}
+          </div>
           <button
             onClick={onClose}
             className="absolute right-0 p-1 hover:bg-gray-100 rounded-full"
@@ -135,30 +144,13 @@ export default function WithdrawFormModal({
           <Label>Account</Label>
           <Select
             options={accountOptions}
-            onChange={(v: any) =>
-              updateWithdraw("accountId", v?.value)
-            }
+            onChange={(v: any) => updateWithdraw("accountId", v?.value)}
           />
-          {errors.account && (
-            <p className="text-red-500 text-xs mt-1">{errors.account}</p>
-          )}
+          {errors.account && <p className="text-red-500 text-xs mt-1">{errors.account}</p>}
         </div>
 
-        {/* CUSTOMER */}
-        <div className="mb-3">
-          <Label>Customer ID</Label>
-          <Input
-            type="text"
-            placeholder="Enter Customer ID"
-            value={form.withdraw.customerId}
-            onChange={(e: any) =>
-              updateWithdraw("customerId", e.target.value)
-            }
-          />
-          {errors.customer && (
-            <p className="text-red-500 text-xs mt-1">{errors.customer}</p>
-          )}
-        </div>
+        {/* CUSTOMER - FULLY HIDDEN */}
+        <input type="hidden" value={form.withdraw.customerId} />
 
         {/* AMOUNT */}
         <div className="mb-3">
@@ -167,29 +159,21 @@ export default function WithdrawFormModal({
             type="number"
             placeholder="Enter amount"
             value={form.withdraw.amount || ""}
-            onChange={(e: any) =>
-              updateWithdraw("amount", Number(e.target.value))
-            }
+            onChange={(e: any) => updateWithdraw("amount", Number(e.target.value))}
           />
-          {errors.amount && (
-            <p className="text-red-500 text-xs mt-1">{errors.amount}</p>
-          )}
+          {errors.amount && <p className="text-red-500 text-xs mt-1">{errors.amount}</p>}
         </div>
 
-        {/* COMMENT (SENDER → RECEIVER) */}
+        {/* COMMENT */}
         <div className="mb-3">
-          <Label>Comment (Sender → Receiver)</Label>
+          <Label>Comment</Label>
           <Input
             type="text"
-            placeholder="e.g. Sender: Ahmed → Receiver: Ali"
+            placeholder="e.g. Withdraw for customer"
             value={form.description}
-            onChange={(e: any) =>
-              setForm({ ...form, description: e.target.value })
-            }
+            onChange={(e: any) => setForm({ ...form, description: e.target.value })}
           />
-          {errors.description && (
-            <p className="text-red-500 text-xs mt-1">{errors.description}</p>
-          )}
+          {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description}</p>}
         </div>
 
         {/* ACTIONS */}
@@ -200,7 +184,6 @@ export default function WithdrawFormModal({
           >
             Cancel
           </button>
-
           <button
             onClick={() => {
               if (!validate()) return;

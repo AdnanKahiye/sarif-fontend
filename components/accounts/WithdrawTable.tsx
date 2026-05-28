@@ -196,7 +196,7 @@ const formatMoney = (amount?: number, currencyId?: number) => {
   <table className="w-full text-left border-collapse">
     <thead className="bg-[#f3f6f9] text-[#878a99] text-[13px] font-bold uppercase border-b border-gray-200">
       <tr>
-        <th className="p-3">Ref</th>
+        {/* <th className="p-3">Ref</th> */}
         <th className="p-3">Customer Name</th>
         {/* <th className="p-3">Sender</th>
         <th className="p-3">Receiver</th> */}
@@ -215,9 +215,9 @@ const formatMoney = (amount?: number, currencyId?: number) => {
         <tr key={item.id} className="text-[13px] hover:bg-gray-50">
 
           {/* Accounts */}
-          <td className="p-3">
+          {/* <td className="p-3">
             {item.withdrawNo} 
-          </td>
+          </td> */}
              {/* Accounts */}
           <td className="p-3">
             {item.customerName} 

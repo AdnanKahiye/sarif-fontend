@@ -1,10 +1,15 @@
 "use client";
 
 import React, { useEffect, useState, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
 import CustomerFormModal, { CustomerFormData } from "./CustomerFormModal";
 import ConfirmDeleteModal from "../ui/Model/ConfirmDeleteModal";
+import LoanFormModal from "@/components/accounts/LoanFormModal";
+import { useRouter } from "next/navigation";
+import AccountFormModal, { AccountFormData } from "@/components/accounts/AccountFormModal";
+import DepositFormModal from "@/components/accounts/DepositsFormModal";
+import WithdrawFormModal from "@/components/accounts/WithdrawFormModal";
 import { CustomerService } from "@/lib/customers";
+import { AccountService } from "@/lib/account";
 import toast from "react-hot-toast";
 import { usePermission } from "@/context/PermissionContext";
 import {
@@ -44,18 +49,24 @@ function ActionDropdown({
   canDelete,
   onEdit,
   onDelete,
+  onLoan,
+  onDeposit,
+  onWithdraw,
+  onCreateAccount,
 }: {
   item: CustomerDto;
   canEdit: boolean;
   canDelete: boolean;
   onEdit: (item: CustomerDto) => void;
   onDelete: (item: CustomerDto) => void;
+  onLoan: (item: CustomerDto) => void;
+  onDeposit: (item: CustomerDto) => void;
+  onWithdraw: (item: CustomerDto) => void;
+  onCreateAccount: (item: CustomerDto) => void;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  const router = useRouter();
 
-  // Close when clicking outside
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) {
@@ -66,14 +77,8 @@ function ActionDropdown({
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const navigate = (path: string) => {
-    setOpen(false);
-    router.push(path);
-  };
-
   return (
     <div className="flex items-center justify-center gap-2">
-      {/* Edit button — kept visible */}
       {canEdit && (
         <button
           onClick={() => onEdit(item)}
@@ -83,7 +88,6 @@ function ActionDropdown({
         </button>
       )}
 
-      {/* Remove button — kept visible */}
       {canDelete && (
         <button
           onClick={() => onDelete(item)}
@@ -93,7 +97,6 @@ function ActionDropdown({
         </button>
       )}
 
-      {/* Three‑dot dropdown for Loan / Deposit / Withdraw */}
       <div className="relative" ref={ref}>
         <button
           onClick={() => setOpen((v) => !v)}
@@ -105,18 +108,10 @@ function ActionDropdown({
 
         {open && (
           <div className="absolute right-0 mt-1 w-44 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg z-50 py-1 text-[13px]">
-            {/* Loan */}
-            <button
-              onClick={() => router.push(`/dashboard/loans?customerId=${item.id}`)}
-              className="w-full text-left px-4 py-2 flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-[#405189] dark:text-blue-400 font-medium transition-colors"
-            >
-              <CreditCard size={14} />
-              Loan
-            </button>
 
             {/* Deposit */}
             <button
-              onClick={() => router.push(`/dashboard/deposits?customerId=${item.id}`)}
+              onClick={() => { setOpen(false); onDeposit(item); }}
               className="w-full text-left px-4 py-2 flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-[#0ab39c] dark:text-emerald-400 font-medium transition-colors"
             >
               <PiggyBank size={14} />
@@ -125,12 +120,34 @@ function ActionDropdown({
 
             {/* Withdraw */}
             <button
-              onClick={() => router.push(`/dashboard/withdrawals?customerId=${item.id}`)}
+              onClick={() => { setOpen(false); onWithdraw(item); }}
               className="w-full text-left px-4 py-2 flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-[#f7b731] dark:text-yellow-400 font-medium transition-colors"
             >
               <ArrowUpDown size={14} />
               Withdraw
             </button>
+
+            {/* Loan */}
+            <button
+              onClick={() => { setOpen(false); onLoan(item); }}
+              className="w-full text-left px-4 py-2 flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-[#405189] dark:text-blue-400 font-medium transition-colors"
+            >
+              <CreditCard size={14} />
+              Loan
+            </button>
+
+            {/* DIVIDER */}
+            <div className="border-t border-gray-100 dark:border-gray-700 my-1" />
+
+            {/* Create Account */}
+            <button
+              onClick={() => { setOpen(false); onCreateAccount(item); }}
+              className="w-full text-left px-4 py-2 flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-[#f06548] font-medium transition-colors"
+            >
+              <CreditCard size={14} />
+              Create Account
+            </button>
+
           </div>
         )}
       </div>
@@ -149,18 +166,36 @@ export default function CustomerTable() {
   const [totalItems, setTotalItems] = useState(0);
   const itemsPerPage = 10;
 
+  // Customer modal state
   const [openModal, setOpenModal] = useState(false);
   const [mode, setMode] = useState<"add" | "edit">("add");
   const [selectedItem, setSelectedItem] = useState<CustomerDto | null>(null);
+
+  // Delete modal state
   const [openDelete, setOpenDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+
+  // Loan modal state
+  const [openLoanModal, setOpenLoanModal] = useState(false);
+  const [loanCustomer, setLoanCustomer] = useState<CustomerDto | null>(null);
+
+  // Deposit modal state
+  const [openDepositModal, setOpenDepositModal] = useState(false);
+  const [depositCustomer, setDepositCustomer] = useState<CustomerDto | null>(null);
+
+  // Withdraw modal state
+  const [openWithdrawModal, setOpenWithdrawModal] = useState(false);
+  const [withdrawCustomer, setWithdrawCustomer] = useState<CustomerDto | null>(null);
+
+  // Account modal state — KU DAR
+  const [openAccountModal, setOpenAccountModal] = useState(false);
+  const [accountCustomer, setAccountCustomer] = useState<CustomerDto | null>(null);
 
   const loadData = useCallback(async (page: number, searchQuery: string) => {
     setLoading(true);
     try {
       const res = await CustomerService.getCustomers(page, itemsPerPage);
       const apiResponse = res.data?.data;
-
       if (apiResponse) {
         let rawData = apiResponse.data || [];
         if (searchQuery) {
@@ -226,12 +261,12 @@ export default function CustomerTable() {
   const canAdd = hasPermission("CREATE.USER");
   const canEdit = hasPermission("EDIT.USER");
   const canDelete = hasPermission("DELETE.USER");
+  const router = useRouter();
 
   return (
     <div className="bg-[#f3f3f9] dark:bg-gray-900 min-h-screen p-4 sm:p-6 font-sans text-[#495057]">
       <div className="mx-auto max-w-7xl">
 
-        {/* Breadcrumb Header */}
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-[15px] font-bold dark:text-gray-200 uppercase tracking-wide">
             Customer Lists
@@ -244,23 +279,17 @@ export default function CustomerTable() {
 
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-sm overflow-hidden">
 
-          {/* Section Title */}
           <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex flex-col md:flex-row items-center justify-between gap-4">
             <h3 className="text-[16px] font-semibold text-[#495057] dark:text-gray-300">
               Add, Edit &amp; Remove
             </h3>
           </div>
 
-          {/* Action Toolbar */}
           <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2 w-full md:w-auto">
               {canAdd && (
                 <button
-                  onClick={() => {
-                    setMode("add");
-                    setSelectedItem(null);
-                    setOpenModal(true);
-                  }}
+                  onClick={() => { setMode("add"); setSelectedItem(null); setOpenModal(true); }}
                   className="bg-[#0ab39c] hover:bg-[#099885] text-white px-4 py-2 rounded text-[13px] flex items-center gap-1 transition-all"
                 >
                   <span className="text-lg">+</span> Add Customer
@@ -274,16 +303,12 @@ export default function CustomerTable() {
                 placeholder="Search name or phone..."
                 className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded text-[13px] focus:outline-none focus:border-[#405189] dark:bg-gray-900 dark:text-white"
                 value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setCurrentPage(1);
-                }}
+                onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
               />
               <Search className="absolute left-3 top-2.5 text-gray-400" size={16} />
             </div>
           </div>
 
-          {/* Table */}
           <div className="overflow-x-auto relative min-h-[300px]">
             {loading && (
               <div className="absolute inset-0 bg-white/40 dark:bg-gray-800/40 z-10 flex items-center justify-center">
@@ -329,31 +354,23 @@ export default function CustomerTable() {
                       </td>
                       <td className="p-3 text-gray-500">{item.email}</td>
                       <td className="p-3 text-center">
-                        <span
-                          className={`px-2 py-[2px] rounded text-[10px] font-bold uppercase tracking-wider ${item.gender === 0
-                              ? "bg-blue-100 text-blue-600"
-                              : "bg-pink-100 text-pink-600"
-                            }`}
-                        >
+                        <span className={`px-2 py-[2px] rounded text-[10px] font-bold uppercase tracking-wider ${item.gender === 0 ? "bg-blue-100 text-blue-600" : "bg-pink-100 text-pink-600"
+                          }`}>
                           {item.gender === 0 ? "MALE" : "FEMALE"}
                         </span>
                       </td>
                       <td className="p-3 text-gray-500 italic">{item.address}</td>
                       <td className="p-3">
-                        {/* ── Inline Edit/Remove + three‑dot dropdown ── */}
                         <ActionDropdown
                           item={item}
                           canEdit={canEdit}
                           canDelete={canDelete}
-                          onEdit={(i) => {
-                            setMode("edit");
-                            setSelectedItem(i);
-                            setOpenModal(true);
-                          }}
-                          onDelete={(i) => {
-                            setSelectedItem(i);
-                            setOpenDelete(true);
-                          }}
+                          onEdit={(i) => { setMode("edit"); setSelectedItem(i); setOpenModal(true); }}
+                          onDelete={(i) => { setSelectedItem(i); setOpenDelete(true); }}
+                          onLoan={(i) => { setLoanCustomer(i); setOpenLoanModal(true); }}
+                          onDeposit={(i) => { setDepositCustomer(i); setOpenDepositModal(true); }}
+                          onWithdraw={(i) => { setWithdrawCustomer(i); setOpenWithdrawModal(true); }}
+                          onCreateAccount={(i) => { setAccountCustomer(i); setOpenAccountModal(true); }}
                         />
                       </td>
                     </tr>
@@ -363,7 +380,6 @@ export default function CustomerTable() {
             </table>
           </div>
 
-          {/* Pagination Footer */}
           <div className="p-4 flex items-center justify-between border-t border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800">
             <span className="text-[13px] text-[#878a99]">
               Showing <span className="font-semibold">{startIndex}</span> to{" "}
@@ -385,8 +401,8 @@ export default function CustomerTable() {
                     key={page}
                     onClick={() => setCurrentPage(page)}
                     className={`px-3 py-1.5 rounded text-[13px] transition-all font-medium ${currentPage === page
-                        ? "bg-[#405189] text-white shadow-sm"
-                        : "border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-600"
+                      ? "bg-[#405189] text-white shadow-sm"
+                      : "border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-600"
                       }`}
                   >
                     {page}
@@ -406,31 +422,116 @@ export default function CustomerTable() {
         </div>
       </div>
 
+      {/* Customer Form Modal */}
       <CustomerFormModal
         open={openModal}
         mode={mode}
         initialData={
-          selectedItem
-            ? {
-              fullName: selectedItem.fullName,
-              gender: selectedItem.gender,
-              email: selectedItem.email,
-              phoneNumber: selectedItem.phoneNumber,
-              altPhoneNumber: selectedItem.altPhoneNumber,
-              address: selectedItem.address,
-            }
-            : undefined
+          selectedItem ? {
+            fullName: selectedItem.fullName,
+            gender: selectedItem.gender,
+            email: selectedItem.email,
+            phoneNumber: selectedItem.phoneNumber,
+            altPhoneNumber: selectedItem.altPhoneNumber,
+            address: selectedItem.address,
+          } : undefined
         }
         onClose={() => setOpenModal(false)}
         onSubmit={handleFormSubmit}
       />
 
+      {/* Confirm Delete Modal */}
       <ConfirmDeleteModal
         open={openDelete}
         loading={deleting}
         onClose={() => setOpenDelete(false)}
         onConfirm={confirmDelete}
       />
+
+      {/* Loan Modal */}
+      {openLoanModal && loanCustomer && (
+        <LoanFormModal
+          open={openLoanModal}
+          customerId={loanCustomer.id}
+          customerName={loanCustomer.fullName}
+          onClose={() => { setOpenLoanModal(false); setLoanCustomer(null); }}
+          onSubmit={async (form) => {
+            try {
+              await AccountService.createLoan(form);
+              toast.success("Loan created successfully");
+              setOpenLoanModal(false);
+              setLoanCustomer(null);
+              loadData(currentPage, search);
+            } catch (error: any) {
+              toast.error(error.response?.data?.message || "Loan failed");
+            }
+          }}
+        />
+      )}
+
+      {/* Deposit Modal */}
+      {openDepositModal && depositCustomer && (
+        <DepositFormModal
+          open={openDepositModal}
+          customerId={depositCustomer.id}
+          customerName={depositCustomer.fullName}
+          onClose={() => { setOpenDepositModal(false); setDepositCustomer(null); }}
+          onSubmit={async (form) => {
+            try {
+              await AccountService.createDeposit(form);
+              toast.success("Deposit successful");
+              setOpenDepositModal(false);
+              setDepositCustomer(null);
+              loadData(currentPage, search);
+            } catch (error: any) {
+              toast.error(error.response?.data?.message || "Deposit failed");
+            }
+          }}
+        />
+      )}
+
+      {/* Withdraw Modal */}
+      {openWithdrawModal && withdrawCustomer && (
+        <WithdrawFormModal
+          open={openWithdrawModal}
+          customerId={withdrawCustomer.id}
+          customerName={withdrawCustomer.fullName}
+          onClose={() => { setOpenWithdrawModal(false); setWithdrawCustomer(null); }}
+          onSubmit={async (form) => {
+            try {
+              await AccountService.createWithdraw(form);
+              toast.success("Withdraw successful");
+              setOpenWithdrawModal(false);
+              setWithdrawCustomer(null);
+              loadData(currentPage, search);
+            } catch (error: any) {
+              toast.error(error.response?.data?.message || "Withdraw failed");
+            }
+          }}
+        />
+      )}
+
+      {openAccountModal && accountCustomer && (
+        <AccountFormModal
+          open={openAccountModal}
+          mode="add"
+          customerId={accountCustomer.id}
+          customerName={accountCustomer.fullName}
+          onClose={() => { setOpenAccountModal(false); setAccountCustomer(null); }}
+          onSubmit={async (form) => {
+            try {
+              await AccountService.createAccount(form);
+              toast.success("Account created successfully");
+              setOpenAccountModal(false);
+              setAccountCustomer(null);
+              loadData(currentPage, search);
+            } catch (error: any) {
+              toast.error(error.response?.data?.message || "Account creation failed");
+            }
+          }}
+        />
+      )}
+
     </div>
   );
 }

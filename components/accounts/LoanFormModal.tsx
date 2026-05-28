@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import Select from "react-select";
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
-import { useSearchParams } from "next/navigation";
 import { X } from "lucide-react";
 import { AccountService } from "@/lib/account";
 
@@ -48,40 +47,45 @@ const emptyForm: CreateLoanRequest = {
   },
 };
 
+/* ================================
+   PROPS
+================================ */
+interface LoanFormModalProps {
+  open: boolean;
+  onClose: () => void;
+  onSubmit: (form: CreateLoanRequest) => void;
+  customerId?: string;       // ← prop ahaan yimaada (CustomerTable)
+  customerName?: string;     // ← optional: magaca customer si loogu tuso
+}
+
 export default function LoanFormModal({
   open,
   onClose,
   onSubmit,
-}: any) {
+  customerId = "",
+  customerName = "",
+}: LoanFormModalProps) {
 
   const [form, setForm] = useState<CreateLoanRequest>(emptyForm);
   const [accounts, setAccounts] = useState<any[]>([]);
   const [errors, setErrors] = useState<any>({});
-  const searchParams = useSearchParams();
-  const customerId = searchParams.get("customerId") || "";
-
-  useEffect(() => {
-    const idFromUrl = searchParams.get("customerId");
-    if (idFromUrl) {
-      setForm((prev) => ({ ...prev, loan: { ...prev.loan, customerId: idFromUrl } }));
-    }
-  }, [searchParams]);
 
   /* ================================
-     loan ACCOUNTS
-  ================================= */
+     MARKA MODAL FURMO: set customerId
+     prop-ka ama URL-ka (whichever available)
+  ================================ */
   useEffect(() => {
     if (!open) return;
 
-    AccountService.getAccountExchangeLookup().then((res) => {
-      setAccounts(res.data?.data || []);
+    setForm({
+      ...emptyForm,
+      loan: {
+        ...emptyForm.loan,
+        customerId: customerId, // ← prop-ka ayaa loo doortay
+      },
     });
-  }, [open]);
-
-  <LoanFormModal
-    open={open}
-    customerId={customerId}  // ← sidaan
-  />
+    setErrors({});
+  }, [open, customerId]);
 
   /* ================================
      LOAD ACCOUNTS
@@ -93,10 +97,6 @@ export default function LoanFormModal({
       setAccounts(res.data?.data || []);
     });
   }, [open]);
-
-  /* ================================
-     RESET FORM
-  ================================= */
 
   /* ================================
      UPDATE HANDLER
@@ -149,9 +149,7 @@ export default function LoanFormModal({
   ================================= */
   const calculateTotal = () => {
     const { principalAmount, interestRate } = form.loan;
-
     if (!interestRate) return principalAmount;
-
     return principalAmount + (principalAmount * interestRate) / 100;
   };
 
@@ -163,7 +161,15 @@ export default function LoanFormModal({
 
         {/* HEADER */}
         <div className="relative flex items-center justify-center mb-4">
-          <h3 className="font-bold text-lg">Loan</h3>
+          <div className="text-center">
+            <h3 className="font-bold text-lg">Loan</h3>
+            {/* Customer magaciisa hadduu jiro ayaa lagu tusi karaa */}
+            {customerName && (
+              <p className="text-sm text-gray-500 mt-0.5">
+                Customer: <span className="font-semibold text-[#405189]">{customerName}</span>
+              </p>
+            )}
+          </div>
           <button
             onClick={onClose}
             className="absolute right-0 p-1 hover:bg-gray-100 rounded-full"
@@ -182,18 +188,8 @@ export default function LoanFormModal({
           {errors.account && <p className="text-red-500 text-xs">{errors.account}</p>}
         </div>
 
-        {/* CUSTOMER */}
-        <div className="mb-3">
-          <Label>Customer ID</Label>
-          <Input
-            placeholder="Enter customer ID"
-            value={form.loan.customerId}
-            onChange={(e: any) =>
-              updateLoan("customerId", e.target.value)
-            }
-          />
-          {errors.customer && <p className="text-red-500 text-xs">{errors.customer}</p>}
-        </div>
+        {/* CUSTOMER - FULLY HIDDEN */}
+        <input type="hidden" value={form.loan.customerId} />
 
         {/* AMOUNT */}
         <div className="mb-3">
@@ -209,7 +205,7 @@ export default function LoanFormModal({
           {errors.amount && <p className="text-red-500 text-xs">{errors.amount}</p>}
         </div>
 
-        {/* INTEREST */}
+        {/* INTEREST — commented out (future use) */}
         {/* <div className="mb-3">
           <Label>Interest Rate (%)</Label>
           <Input
@@ -227,7 +223,8 @@ export default function LoanFormModal({
 
         {/* DUE DATE */}
         <div className="mb-3">
-          <Label>Pay Date</Label>          <Input
+          <Label>Pay Date</Label>
+          <Input
             type="date"
             value={form.loan.dueDate}
             onChange={(e: any) =>
@@ -249,8 +246,6 @@ export default function LoanFormModal({
           />
           {errors.description && <p className="text-red-500 text-xs">{errors.description}</p>}
         </div>
-
-
 
         {/* ACTIONS */}
         <div className="flex gap-2 mt-4">

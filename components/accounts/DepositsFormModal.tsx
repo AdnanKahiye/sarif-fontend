@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import Select from "react-select";
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
-import { useSearchParams } from "next/navigation";
 import { X } from "lucide-react";
 import { AccountService } from "@/lib/account";
 
@@ -34,26 +33,44 @@ const emptyForm: CreateDepositRequest = {
   },
 };
 
+
+
+interface DepositFormModalProps {
+  open: boolean;
+  onClose: () => void;
+  onSubmit: (form: CreateDepositRequest) => void;
+  customerId?: string;       // ← prop ahaan yimaada (CustomerTable)
+  customerName?: string;     // ← optional: magaca customer si loogu tuso
+}
+
+
 export default function DepositFormModal({
   open,
   onClose,
   onSubmit,
-}: any) {
+  customerId = "",
+  customerName = "",
+}: DepositFormModalProps) {
+
 
 
   const [form, setForm] = useState<CreateDepositRequest>(emptyForm);
   const [accounts, setAccounts] = useState<any[]>([]);
   const [errors, setErrors] = useState<any>({});
-  
-  const searchParams = useSearchParams();
-  const customerId = searchParams.get("customerId") || "";
+
 
   useEffect(() => {
-    const idFromUrl = searchParams.get("customerId");
-    if (idFromUrl) {
-      setForm((prev) => ({ ...prev, deposit: { ...prev.deposit, customerId: idFromUrl } }));
-    }
-  }, [searchParams]);
+    if (!open) return;
+
+    setForm({
+      ...emptyForm,
+      deposit: {
+        ...emptyForm.deposit,
+        customerId: customerId, // ← prop-ka ayaa loo doortay
+      },
+    });
+    setErrors({});
+  }, [open, customerId]);
 
   /* ================================
      deposit ACCOUNTS
@@ -66,11 +83,20 @@ export default function DepositFormModal({
     });
   }, [open]);
 
-  <DepositFormModal
-    open={open}
-    customerId={customerId}  // ← sidaan
-  />
 
+
+  /* ================================
+     UPDATE HANDLER
+  ================================= */
+  const updateDeposit = (key: keyof CreateDepositRequest["deposit"], value: any) => {
+    setForm((prev) => ({
+      ...prev,
+      deposit: {
+        ...prev.deposit,
+        [key]: value,
+      },
+    }));
+  };
 
 
   /* ================================
@@ -92,18 +118,6 @@ export default function DepositFormModal({
     return Object.keys(e).length === 0;
   };
 
-  /* ================================
-     UPDATE HANDLER
-  ================================= */
-  const updateDeposit = (key: any, value: any) => {
-    setForm((prev) => ({
-      ...prev,
-      deposit: {
-        ...prev.deposit,
-        [key]: value,
-      },
-    }));
-  };
 
   /* ================================
      OPTIONS
@@ -116,7 +130,7 @@ export default function DepositFormModal({
   /* ================================
      RESET FORM ON CLOSE
   ================================= */
-  
+
 
   if (!open) return null;
 
@@ -126,7 +140,15 @@ export default function DepositFormModal({
 
         {/* HEADER */}
         <div className="relative flex items-center justify-center mb-4">
-          <h3 className="font-bold text-lg">Deposit</h3>
+          <div className="text-center">
+            <h3 className="font-bold text-lg">deposit</h3>
+            {/* Customer magaciisa hadduu jiro ayaa lagu tusi karaa */}
+            {customerName && (
+              <p className="text-sm text-gray-500 mt-0.5">
+                Customer: <span className="font-semibold text-[#405189]">{customerName}</span>
+              </p>
+            )}
+          </div>
           <button
             onClick={onClose}
             className="absolute right-0 p-1 hover:bg-gray-100 rounded-full"
@@ -151,23 +173,8 @@ export default function DepositFormModal({
           )}
         </div>
 
-        {/* CUSTOMER ID */}
-        <div className="mb-3">
-          <Label>Customer ID</Label>
-          <Input
-            type="text"
-            placeholder="Enter Customer ID"
-            value={form.deposit.customerId}
-            onChange={(e: any) =>
-              updateDeposit("customerId", e.target.value)
-            }
-          />
-          {errors.customer && (
-            <p className="text-red-500 text-xs mt-1">
-              {errors.customer}
-            </p>
-          )}
-        </div>
+        {/* CUSTOMER - FULLY HIDDEN */}
+        <input type="hidden" value={form.deposit.customerId} />
 
         {/* AMOUNT */}
         <div className="mb-3">
@@ -212,8 +219,7 @@ export default function DepositFormModal({
           <button
             onClick={() => {
               if (!validate()) return;
-
-              onSubmit(form); // ✅ correct payload
+              onSubmit(form);
             }}
             className="w-1/2 bg-[#405189] text-white py-2 rounded"
           >

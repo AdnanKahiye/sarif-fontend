@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
-import DepositForm, { CreateLoanRequest } from "./LoanFormModal";
+import loanForm, { CreateLoanRequest } from "./LoanFormModal";
 import ConfirmDeleteModal from "../ui/Model/ConfirmDeleteModal";
 import { AccountService } from "@/lib/account";
 import toast from "react-hot-toast";
 import { Loader2, ChevronLeft, ChevronRight } from "lucide-react";
-import DepositFormModal  from "./LoanFormModal";
+import LoanFormModal  from "./LoanFormModal";
 
 export const getDepositStatusBadge = (status: number) => {
   switch (status) {
@@ -77,6 +77,8 @@ const getCurrencySymbol = (currencyId?: number) => {
     default: return "";
   }
 };
+
+
 
 
 
@@ -192,7 +194,7 @@ const formatMoney = (amount?: number, currencyId?: number) => {
   <table className="w-full text-left border-collapse">
     <thead className="bg-[#f3f6f9] text-[#878a99] text-[13px] font-bold uppercase border-b border-gray-200">
       <tr>
-        <th className="p-3">Loan No</th>
+        {/* <th className="p-3">Loan No</th> */}
         {/* <th className="p-3">Sender</th>
         <th className="p-3">Receiver</th> */}
         <th className="p-3">Customer </th>
@@ -214,9 +216,9 @@ const formatMoney = (amount?: number, currencyId?: number) => {
         <tr key={item.id} className="text-[13px] hover:bg-gray-50">
 
           {/* Accounts */}
-          <td className="p-3">
+          {/* <td className="p-3">
             {item.loanNo} 
-          </td>
+          </td> */}
      
         <td className="p-3">
             {item.customerName} 
@@ -307,7 +309,7 @@ const formatMoney = (amount?: number, currencyId?: number) => {
         </div>
       </div>
       
-<DepositFormModal
+<LoanFormModal
   open={openForm}
   onClose={() => setOpenForm(false)}
   onSubmit={async (data: CreateLoanRequest) => {

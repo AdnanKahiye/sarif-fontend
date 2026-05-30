@@ -35,11 +35,22 @@ const emptyForm: CreateRepaymentRequest = {
   },
 };
 
+/* ================================
+   PROPS
+================================ */
+interface RepaymentFormModalProps {
+  open: boolean;
+  onClose: () => void;
+  onSubmit: (data: CreateRepaymentRequest) => void;
+  loanId?: string;
+}
+
 export default function RepaymentFormModal({
   open,
   onClose,
   onSubmit,
-}: any) {
+  loanId,
+}: RepaymentFormModalProps) {
 
   const [form, setForm] = useState<CreateRepaymentRequest>(emptyForm);
   const [accounts, setAccounts] = useState<any[]>([]);
@@ -50,8 +61,8 @@ export default function RepaymentFormModal({
   ================================= */
   useEffect(() => {
     if (!open) return;
-
     AccountService.getAccountExchangeLookup().then((res) => {
+      console.log("ACCOUNTS DATA:", res.data?.data);
       setAccounts(res.data?.data || []);
     });
   }, [open]);
@@ -65,6 +76,21 @@ export default function RepaymentFormModal({
       setErrors({});
     }
   }, [open]);
+
+  /* ================================
+     AUTO-FILL LOAN ID
+  ================================= */
+  useEffect(() => {
+    if (open && loanId) {
+      setForm((prev) => ({
+        ...prev,
+        repayment: {
+          ...prev.repayment,
+          loanId: loanId,
+        },
+      }));
+    }
+  }, [open, loanId]);
 
   /* ================================
      UPDATE
@@ -126,26 +152,15 @@ export default function RepaymentFormModal({
         {/* GRID FORM */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 
-          {/* LOAN ID */}
-          <div>
-            <Label>Loan ID</Label>
-            <Input
-              value={form.repayment.loanId}
-              onChange={(e: any) =>
-                updateRepayment("loanId", e.target.value)
-              }
-            />
-            {errors.loan && <p className="text-red-500 text-xs">{errors.loan}</p>}
-          </div>
+          {/* LOAN ID - HIDDEN (auto-filled) */}
+          <input type="hidden" value={form.repayment.loanId} readOnly />
 
           {/* CASH ACCOUNT */}
-          <div>
+          <div className="md:col-span-2">
             <Label>Cash Account</Label>
             <Select
               options={accountOptions}
-              onChange={(v: any) =>
-                updateRepayment("cashAccountId", v?.value)
-              }
+              onChange={(v: any) => updateRepayment("cashAccountId", v?.value)}
             />
             {errors.cash && <p className="text-red-500 text-xs">{errors.cash}</p>}
           </div>
@@ -168,9 +183,7 @@ export default function RepaymentFormModal({
             <Label>Note</Label>
             <Input
               value={form.repayment.note}
-              onChange={(e: any) =>
-                updateRepayment("note", e.target.value)
-              }
+              onChange={(e: any) => updateRepayment("note", e.target.value)}
             />
           </div>
 
@@ -193,7 +206,6 @@ export default function RepaymentFormModal({
           <button onClick={onClose} className="w-1/2 border py-2 rounded">
             Cancel
           </button>
-
           <button
             onClick={() => {
               if (!validate()) return;

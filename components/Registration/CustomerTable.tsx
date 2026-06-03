@@ -462,6 +462,7 @@ export default function CustomerTable() {
               setOpenLoanModal(false);
               setLoanCustomer(null);
               loadData(currentPage, search);
+              router.push("/dashboard/loans"); 
             } catch (error: any) {
               toast.error(error.response?.data?.message || "Loan failed");
             }
@@ -478,13 +479,14 @@ export default function CustomerTable() {
           onClose={() => { setOpenDepositModal(false); setDepositCustomer(null); }}
           onSubmit={async (form) => {
             try {
-              await AccountService.createDeposit(form);
-              toast.success("Deposit successful");
-              setOpenDepositModal(false);
-              setDepositCustomer(null);
+              await AccountService.createLoan(form);
+              toast.success("Loan created successfully");
+              setOpenLoanModal(false);
+              setLoanCustomer(null);
               loadData(currentPage, search);
+              router.push("/dashboard/deposits"); 
             } catch (error: any) {
-              toast.error(error.response?.data?.message || "Deposit failed");
+              toast.error(error.response?.data?.message || "Loan failed");
             }
           }}
         />
@@ -499,13 +501,14 @@ export default function CustomerTable() {
           onClose={() => { setOpenWithdrawModal(false); setWithdrawCustomer(null); }}
           onSubmit={async (form) => {
             try {
-              await AccountService.createWithdraw(form);
-              toast.success("Withdraw successful");
-              setOpenWithdrawModal(false);
-              setWithdrawCustomer(null);
+              await AccountService.createLoan(form);
+              toast.success("Loan created successfully");
+              setOpenLoanModal(false);
+              setLoanCustomer(null);
               loadData(currentPage, search);
+              router.push("/dashboard/withdrawals"); 
             } catch (error: any) {
-              toast.error(error.response?.data?.message || "Withdraw failed");
+              toast.error(error.response?.data?.message || "Loan failed");
             }
           }}
         />
@@ -520,13 +523,14 @@ export default function CustomerTable() {
           onClose={() => { setOpenAccountModal(false); setAccountCustomer(null); }}
           onSubmit={async (form) => {
             try {
-              await AccountService.createAccount(form);
-              toast.success("Account created successfully");
-              setOpenAccountModal(false);
-              setAccountCustomer(null);
+              await AccountService.createLoan(form);
+              toast.success("Loan created successfully");
+              setOpenLoanModal(false);
+              setLoanCustomer(null);
               loadData(currentPage, search);
+              router.push("/dashboard/accounts"); 
             } catch (error: any) {
-              toast.error(error.response?.data?.message || "Account creation failed");
+              toast.error(error.response?.data?.message || "Loan failed");
             }
           }}
         />

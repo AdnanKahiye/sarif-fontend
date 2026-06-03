@@ -4,6 +4,7 @@ import React, { useEffect, useState, useCallback, useRef } from "react";
 import { CreateLoanRequest } from "./LoanFormModal";
 import ConfirmDeleteModal from "../ui/Model/ConfirmDeleteModal";
 import { AccountService } from "@/lib/account";
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { Loader2, ChevronLeft, ChevronRight, MoreHorizontal, Pencil, Trash2, RefreshCw } from "lucide-react";
 import LoanFormModal from "./LoanFormModal";
@@ -103,6 +104,8 @@ function ActionDropdown({
 
 // ── Main Table ───────────────────────────────────────────────────
 export default function LoanTable() {
+
+  const router = useRouter();
   const today = new Date().toISOString().split("T")[0];
   const firstDay = new Date(new Date().getFullYear(), new Date().getMonth(), 1)
     .toISOString().split("T")[0];
@@ -129,7 +132,7 @@ export default function LoanTable() {
     setLoading(true);
     try {
       const res = await AccountService.getLoans(
-        
+
         page,
         itemsPerPage,
         useFilters ? fromDate : firstDay,
@@ -237,7 +240,7 @@ export default function LoanTable() {
                       })}
                     </td>
 
-                      <td className="p-3 text-[#0ab39c] font-bold">
+                    <td className="p-3 text-[#0ab39c] font-bold">
                       {(item.paidAmount || 0).toLocaleString("en-US", {
                         style: "currency",
                         currency: "USD",
@@ -245,11 +248,11 @@ export default function LoanTable() {
                     </td>
 
                     <td className="p-3 text-red-500 font-bold">
-  {(item.principalAmount - (item.paidAmount || 0)).toLocaleString("en-US", {
-    style: "currency",
-    currency: "USD",
-  })}
-</td>
+                      {(item.principalAmount - (item.paidAmount || 0)).toLocaleString("en-US", {
+                        style: "currency",
+                        currency: "USD",
+                      })}
+                    </td>
 
 
                     <td className="p-3">
@@ -332,7 +335,7 @@ export default function LoanTable() {
           }
         }}
       />
-
+      
       {/* ── REPAYMENT MODAL ── */}
       <RepaymentFormModal
         open={openRepayment}
@@ -344,6 +347,7 @@ export default function LoanTable() {
             toast.success("Repayment saved");
             setOpenRepayment(false);
             loadData(currentPage);
+            router.push("/dashboard/Repayment"); 
           } catch {
             toast.error("Repayment failed");
           }

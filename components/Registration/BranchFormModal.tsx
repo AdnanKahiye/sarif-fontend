@@ -43,7 +43,7 @@ export default function BranchFormModal({ open, mode, initialData, onClose, onSu
         const res = await SetupService.getAgencies(1, 100);
         if (res.data?.success) {
            const apiResponse = res.data?.data;
-          setAgencies(apiResponse.data || []); // Assuming the API returns { success: boolean, data: { data: Agency[] } }
+          setAgencies(apiResponse.data || []);
         }
       } catch (err) {
         console.error("Failed to load agencies", err);
@@ -52,7 +52,7 @@ export default function BranchFormModal({ open, mode, initialData, onClose, onSu
       }
     };
 
-    if (open) fetchCats(); // Fetch only when modal opens
+    if (open) fetchCats();
   }, [open]);
 
   useEffect(() => {
@@ -69,7 +69,6 @@ export default function BranchFormModal({ open, mode, initialData, onClose, onSu
     }
   }, [mode, initialData, open]);
 
-  // Changed 'v' type to 'any' or 'string | boolean' to handle the checkbox/select
   const update = (k: keyof BranchFormData, v: string | boolean) => {
     setForm((p) => ({ ...p, [k]: v }));
     if (errors[k]) setErrors((prev) => ({ ...prev, [k]: "" }));
@@ -106,16 +105,15 @@ export default function BranchFormModal({ open, mode, initialData, onClose, onSu
 
   if (!open) return null;
 
-  // Shared class for your custom select styling
   const selectClassName = "w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-[#090044] focus:ring-2 focus:ring-[#00bf63] outline-none appearance-none disabled:opacity-50 transition-all";
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/40 backdrop-blur-none p-4">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/40 backdrop-blur-none p-3 sm:p-4">
       <div
-        className="relative w-full max-w-xl bg-white dark:bg-gray-950 rounded-xl shadow-xl border border-gray-200 dark:border-gray-800"
+        className="relative w-full max-w-xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-950 rounded-xl shadow-xl border border-gray-200 dark:border-gray-800"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="relative p-6 border-b border-gray-100 dark:border-gray-800 text-center">
+        <div className="relative p-4 sm:p-6 border-b border-gray-100 dark:border-gray-800 text-center">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
             {mode === "add" ? "Add New Branch" : "Edit Branch Profile"}
           </h3>
@@ -127,7 +125,7 @@ export default function BranchFormModal({ open, mode, initialData, onClose, onSu
           </button>
         </div>
 
-        <div className="p-6 space-y-6">
+        <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Field label="Full Name" required error={errors.name}>
               <Input value={form.name} onChange={(e) => update("name", e.target.value)} placeholder="Full Name" />
@@ -164,17 +162,17 @@ export default function BranchFormModal({ open, mode, initialData, onClose, onSu
           </div>
         </div>
 
-        <div className="p-4 bg-gray-50/50 dark:bg-gray-900/50 border-t border-gray-100 dark:border-gray-800 flex justify-end items-center gap-3 rounded-b-xl">
+        <div className="p-4 bg-gray-50/50 dark:bg-gray-900/50 border-t border-gray-100 dark:border-gray-800 flex flex-col-reverse sm:flex-row justify-end items-stretch sm:items-center gap-2 sm:gap-3 rounded-b-xl">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors"
+            className="px-4 py-2.5 sm:py-2 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors text-center rounded-lg border border-gray-200 sm:border-0"
           >
             Cancel
           </button>
           <button
             onClick={submit}
             disabled={loading}
-            className="flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold transition-all disabled:opacity-50"
+            className="flex items-center justify-center gap-2 px-6 py-2.5 sm:py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold transition-all disabled:opacity-50"
           >
             {loading ? <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Save className="w-4 h-4" />}
             {mode === "add" ? "Create" : "Save Changes"}

@@ -97,17 +97,17 @@ export default function ExchangeFormModal({ open, onClose, onSubmit }: any) {
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/40 p-4">
       <div className="w-full max-w-lg bg-white rounded-xl p-5">
-<div className="relative flex items-center justify-center mb-3">
-  <h3 className="font-bold text-lg">Exchange</h3>
+        <div className="relative flex items-center justify-center mb-3">
+          <h3 className="font-bold text-lg">Exchange</h3>
 
-  {/* Close button stays right */}
-  <button
-    onClick={onClose}
-    className="absolute right-0 p-1 hover:bg-gray-100 rounded-full"
-  >
-    <X className="w-5 h-5 text-gray-500" />
-  </button>
-</div>
+          {/* Close button stays right */}
+          <button
+            onClick={onClose}
+            className="absolute right-0 p-1 hover:bg-gray-100 rounded-full"
+          >
+            <X className="w-5 h-5 text-gray-500" />
+          </button>
+        </div>
 
         {/* ACCOUNTS */}
         <div className="grid grid-cols-2 gap-3">
@@ -143,12 +143,20 @@ export default function ExchangeFormModal({ open, onClose, onSubmit }: any) {
         </div>
 
         {/* SUBMIT */}
-        <button
-          onClick={() => validate() && onSubmit(form)}
-          className="w-full bg-[#405189] text-white mt-4 py-2 rounded"
-        >
-          Save
-        </button>
+        <div className="flex gap-3 mt-5">
+          <button
+            onClick={onClose}
+            className="w-1/2 border border-gray-300 py-2.5 rounded text-[13px]"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => validate() && onSubmit(form)}
+            className="w-1/2 bg-[#405189] text-white py-2.5 rounded text-[13px] hover:bg-[#364574]"
+          >
+            Save
+          </button>
+        </div>
 
       </div>
     </div>

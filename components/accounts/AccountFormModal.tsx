@@ -26,8 +26,8 @@ interface Props {
     open: boolean;
     mode: "add" | "edit";
     initialData?: AccountFormData;
-    customerId?: string;      // ← prop ahaan yimaada (CustomerTable)
-    customerName?: string;    // ← magaca customer auto-fill + tus
+    customerId?: string;      
+    customerName?: string;    
     onClose: () => void;
     onSubmit: (data: AccountFormData) => void;
 }
@@ -48,11 +48,6 @@ export default function AccountFormModal({
     const [currenciesLoading, setCurrenciesLoading] = useState(false);
     
 
-    /* ================================
-       MARKA MODAL FURMO: auto-fill
-       customerId → referenceId
-       customerName → name
-    ================================ */
     useEffect(() => {
         if (!open) return;
 
@@ -61,8 +56,8 @@ export default function AccountFormModal({
         } else {
             setForm({
                 ...emptyForm,
-                name: customerName || "",        // ← Account Name auto-fill
-                referenceId: customerId || null, // ← Reference auto-fill hidden
+                name: customerName || "",       
+                referenceId: customerId || null, 
             });
         }
         setErrors({});
@@ -167,8 +162,6 @@ export default function AccountFormModal({
 
                 <div className="p-6 space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                        {/* ACCOUNT NAME — auto-filled customerName */}
                         <Field label="Account Name" required error={errors.name}>
                             <Input
                                 value={form.name}

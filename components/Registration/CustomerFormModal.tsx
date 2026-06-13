@@ -3,11 +3,11 @@
 import React, { useEffect, useState, useCallback } from "react";
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
-import { X, Save, User } from "lucide-react";
+import { X, Save } from "lucide-react";
 
 export interface CustomerFormData {
   fullName: string;
-  gender: number; // 0 for Male, 1 for Female
+  gender: number;
   email: string;
   phoneNumber: string;
   altPhoneNumber: string;
@@ -24,7 +24,7 @@ interface Props {
 
 const emptyForm: CustomerFormData = {
   fullName: "",
-  gender: 0, // Default to Male
+  gender: 0,
   email: "",
   phoneNumber: "",
   altPhoneNumber: "",
@@ -58,7 +58,6 @@ export default function CustomerFormModal({ open, mode, initialData, onClose, on
     if (!form.phoneNumber.trim()) e.phoneNumber = "Phone Number is required";
     if (!form.address.trim()) e.address = "Address is required";
     if (form.email && !/\S+@\S+\.\S+/.test(form.email)) e.email = "Invalid email format";
-
     setErrors(e);
     return !Object.keys(e).length;
   };
@@ -87,39 +86,43 @@ export default function CustomerFormModal({ open, mode, initialData, onClose, on
   const selectClassName = "w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-[#090044] focus:ring-2 focus:ring-[#00bf63] outline-none appearance-none transition-all";
 
   return (
+    /* ── Backdrop ── */
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/40 p-4">
+      {/* MEEL 1 — max-h-[90dvh] overflow-y-auto mx-4 ku daray */}
       <div
-        className="relative w-full max-w-2xl bg-white dark:bg-gray-950 rounded-xl shadow-xl border border-gray-200 dark:border-gray-800"
+        className="relative w-full max-w-2xl bg-white dark:bg-gray-950 rounded-xl shadow-xl border border-gray-200 dark:border-gray-800 max-h-[90dvh] overflow-y-auto mx-4"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="relative p-6 border-b border-gray-100 dark:border-gray-800 text-center">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center justify-center gap-2">
-        
+        <div className="relative p-5 sm:p-6 border-b border-gray-100 dark:border-gray-800 text-center">
+          {/* MEEL 2 — text-base sm:text-lg */}
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white flex items-center justify-center gap-2">
             {mode === "add" ? "New Customer" : "Edit Customer"}
           </h3>
-          <button 
-            onClick={onClose} 
-            className="absolute right-4 top-1/2 -translate-y-1/2 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+          {/* MEEL 3 — p-1.5 hover:bg-gray-100 rounded-full */}
+          <button
+            onClick={onClose}
+            className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
           >
             <X className="w-4 h-4 text-gray-400" />
           </button>
         </div>
 
         {/* Body */}
-        <div className="p-6 space-y-5">
+        {/* MEEL 4 — p-5 sm:p-6 */}
+        <div className="p-5 sm:p-6 space-y-5">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Field label="Full Name" required error={errors.fullName}>
-              <Input 
-                value={form.fullName} 
-                onChange={(e) => update("fullName", e.target.value)} 
-                placeholder="Enter Full Name" 
+              <Input
+                value={form.fullName}
+                onChange={(e) => update("fullName", e.target.value)}
+                placeholder="Enter Full Name"
               />
             </Field>
 
             <Field label="Gender" required>
-              <select 
-                value={form.gender} 
+              <select
+                value={form.gender}
                 onChange={(e) => update("gender", Number(e.target.value))}
                 className={selectClassName}
               >
@@ -129,35 +132,35 @@ export default function CustomerFormModal({ open, mode, initialData, onClose, on
             </Field>
 
             <Field label="Phone Number" required error={errors.phoneNumber}>
-              <Input 
-                value={form.phoneNumber} 
-                onChange={(e) => update("phoneNumber", e.target.value)} 
-                placeholder="e.g. 61xxxxxxx" 
+              <Input
+                value={form.phoneNumber}
+                onChange={(e) => update("phoneNumber", e.target.value)}
+                placeholder="e.g. 61xxxxxxx"
               />
             </Field>
 
             <Field label="Alt Phone Number">
-              <Input 
-                value={form.altPhoneNumber} 
-                onChange={(e) => update("altPhoneNumber", e.target.value)} 
-                placeholder="Optional secondary phone" 
+              <Input
+                value={form.altPhoneNumber}
+                onChange={(e) => update("altPhoneNumber", e.target.value)}
+                placeholder="Optional secondary phone"
               />
             </Field>
 
             <Field label="Email Address" error={errors.email}>
-              <Input 
+              <Input
                 type="email"
-                value={form.email} 
-                onChange={(e) => update("email", e.target.value)} 
-                placeholder="customer@example.com" 
+                value={form.email}
+                onChange={(e) => update("email", e.target.value)}
+                placeholder="customer@example.com"
               />
             </Field>
 
             <Field label="Address" required error={errors.address}>
-              <Input 
-                value={form.address} 
-                onChange={(e) => update("address", e.target.value)} 
-                placeholder="Street name / Location" 
+              <Input
+                value={form.address}
+                onChange={(e) => update("address", e.target.value)}
+                placeholder="Street name / Location"
               />
             </Field>
           </div>
@@ -179,7 +182,7 @@ export default function CustomerFormModal({ open, mode, initialData, onClose, on
             {loading ? (
               <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
-              <Save  className="w-4 h-4" />
+              <Save className="w-4 h-4" />
             )}
             {mode === "add" ? "Save Customer" : "Edit Customer"}
           </button>
@@ -189,7 +192,6 @@ export default function CustomerFormModal({ open, mode, initialData, onClose, on
   );
 }
 
-// Helpers
 function Field({ label, children, error, required }: { label: string; children: React.ReactNode; error?: string; required?: boolean }) {
   return (
     <div className="space-y-1">

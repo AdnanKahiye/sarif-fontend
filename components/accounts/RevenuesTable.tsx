@@ -6,49 +6,27 @@ import ConfirmDeleteModal from "../ui/Model/ConfirmDeleteModal";
 import { AccountService } from "@/lib/account";
 import toast from "react-hot-toast";
 import { Loader2, ChevronLeft, ChevronRight } from "lucide-react";
-import DepositFormModal  from "./RevenuesFormModal";
+import DepositFormModal from "./RevenuesFormModal";
 
 export const getDepositStatusBadge = (status: number) => {
   switch (status) {
-    case 1:
-      return {
-        text: "Pending",
-        class: "bg-yellow-100 text-yellow-700",
-      };
-    case 2:
-      return {
-        text: "Partial",
-        class: "bg-blue-100 text-blue-700",
-      };
-    case 3:
-      return {
-        text: "Completed",
-        class: "bg-green-100 text-green-700",
-      };
-    default:
-      return {
-        text: "Unknown",
-        class: "bg-gray-100 text-gray-600",
-      };
+    case 1: return { text: "Pending", class: "bg-yellow-100 text-yellow-700" };
+    case 2: return { text: "Partial", class: "bg-blue-100 text-blue-700" };
+    case 3: return { text: "Completed", class: "bg-green-100 text-green-700" };
+    default: return { text: "Unknown", class: "bg-gray-100 text-gray-600" };
   }
 };
-
 
 interface RevenuesDto {
   id: string;
   title: string;
-description: string;
+  description: string;
   amount: number;
   createdAt: string;
   sourceType: string;
-   revenueAccountName: string;
-cashAccountName: string;
-
-
+  revenueAccountName: string;
+  cashAccountName: string;
 }
-
-
-
 
 export default function RevenuesTable() {
   const today = new Date().toISOString().split("T")[0];
@@ -58,57 +36,13 @@ export default function RevenuesTable() {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
-  
   const [fromDate, setFromDate] = useState(firstDay);
   const [toDate, setToDate] = useState(today);
-  
   const [openForm, setOpenForm] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
   const [selectedItem, setSelectedItem] = useState<RevenuesDto | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
-
-const getCurrencySymbol = (currencyId?: number) => {
-  if (!currencyId) return "";
-
-  switch (currencyId) {
-    case 1: return "$";
-    case 2: return "Sh";
-    case 3: return "KSh";
-    default: return "";
-  }
-};
-
-
-
-
-
-const formatMoney = (amount?: number, currencyId?: number) => {
-  const symbol = getCurrencySymbol(currencyId);
-  
-
-  const value = new Intl.NumberFormat("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(amount || 0);
-
-  return (
-    <span className="flex items-center gap-1">
-      {/* Symbol */}
-      <span className="text-gray-400 text-xs font-semibold">
-        {symbol}
-      </span>
-
-      {/* Amount */}
-      <span className="text-gray-900 font-bold">
-        {value}
-      </span>
-    </span>
-  );
-};
-
-
-
 
   const itemsPerPage = 10;
 
@@ -116,9 +50,9 @@ const formatMoney = (amount?: number, currencyId?: number) => {
     setLoading(true);
     try {
       const res = await AccountService.getRevenues(
-        page, 
-        itemsPerPage, 
-        useFilters ? fromDate : firstDay, 
+        page,
+        itemsPerPage,
+        useFilters ? fromDate : firstDay,
         useFilters ? toDate : today
       );
       const apiResponse = res.data?.data;
@@ -167,13 +101,12 @@ const formatMoney = (amount?: number, currencyId?: number) => {
 
         <div className="bg-white dark:bg-gray-800 border border-gray-200 rounded shadow-sm overflow-hidden">
           <div className="p-4 flex flex-col md:flex-row items-center justify-between gap-4">
-            <button 
-              onClick={() => { setIsEdit(false); setOpenForm(true); }} 
+            <button
+              onClick={() => { setIsEdit(false); setOpenForm(true); }}
               className="w-full md:w-auto bg-[#0ab39c] text-white px-4 py-2 rounded text-[13px] hover:bg-[#089a86]"
             >
               + Add Revenue
             </button>
-            
             <div className="w-full md:w-auto flex flex-col sm:flex-row items-center gap-2">
               <input type="date" value={fromDate} className="w-full sm:w-auto border p-2 rounded text-[13px]" onChange={(e) => setFromDate(e.target.value)} />
               <input type="date" value={toDate} className="w-full sm:w-auto border p-2 rounded text-[13px]" onChange={(e) => setToDate(e.target.value)} />
@@ -183,147 +116,177 @@ const formatMoney = (amount?: number, currencyId?: number) => {
             </div>
           </div>
 
-         <div className="overflow-x-auto min-h-[300px] relative">
-  {loading && (
-    <div className="absolute inset-0 flex items-center justify-center bg-white/50 z-10">
-      <Loader2 className="animate-spin text-[#405189]" size={30} />
-    </div>
-  )}
+          {/* ─────────────────────────────────────────────
+              TABLE BODY AREA — with loading overlay
+          ───────────────────────────────────────────── */}
+          <div className="relative min-h-[200px]">
+            {loading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-white/50 z-10">
+                <Loader2 className="animate-spin text-[#405189]" size={30} />
+              </div>
+            )}
 
-  <table className="w-full text-left border-collapse">
-    <thead className="bg-[#f3f6f9] text-[#878a99] text-[13px] font-bold uppercase border-b border-gray-200">
-      <tr>
-
-        <th className="p-3">Title</th>
-        <th className="p-3">Cash Acc</th>
-        {/* <th className="p-3">Sender</th>
-        <th className="p-3">Receiver</th> */}
-        <th className="p-3">Revenue Acc</th>
-         <th className="p-3">Source</th>
-
-        <th className="p-3">Note</th>
-        <th className="p-3">Amount</th>
-
-        <th className="p-3">CreateAt</th>
-
-        <th className="p-3 text-center">Action</th>
-      </tr>
-    </thead>
-
-    <tbody className="divide-y divide-gray-100">
-      {data.map((item) => (
-        
-        <tr key={item.id} className="text-[13px] hover:bg-gray-50">
-
- {/* Accounts */}
-          <td className="p-3">
-            {item.title} 
-          </td>
-
-
-          {/* Accounts */}
-          <td className="p-3">
-            {item.cashAccountName} 
-          </td>
-     
-        <td className="p-3">
-            {item.revenueAccountName} 
-          </td>
-
-            <td className="p-3">
-            {item.sourceType} 
-          </td>
-          <td className="p-3">
-            {item.description} 
-          </td>
-
-
-
-
-       
-
-          {/* TO */}
-          <td className="p-3 text-[#0ab39c] font-bold">
-            {(item.amount || 0).toLocaleString("en-US", {
-              style: "currency",
-              currency: "USD",
-            })}
-          </td>
-          
-          <td className="p-3">
-            {new Date(item.createdAt).toLocaleDateString("en-US", {
-              month: "2-digit",
-              day: "2-digit",
-              year: "2-digit",
-            })}
-          </td>
-    
-
-    
-
-          {/* ACTION */}
-          <td className="p-3 text-center">
-            <div className="flex gap-2 justify-center">
-              <button
-                onClick={() => handleEdit(item)}
-                className="bg-[#299cdb] text-white px-3 py-1 rounded text-[11px]"
-              >
-                Edit
-              </button>
-
-              <button
-                onClick={() => {
-                  setSelectedItem(item);
-                  setOpenDelete(true);
-                }}
-                className="bg-[#f06548] text-white px-3 py-1 rounded text-[11px]"
-              >
-                Remove
-              </button>
+            {/* ══════════════════════════════════════════
+                DESKTOP TABLE  (hidden on mobile)
+            ══════════════════════════════════════════ */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead className="bg-[#f3f6f9] text-[#878a99] text-[13px] font-bold uppercase border-b border-gray-200">
+                  <tr>
+                    <th className="p-3">Title</th>
+                    <th className="p-3">Cash Acc</th>
+                    <th className="p-3">Revenue Acc</th>
+                    <th className="p-3">Source</th>
+                    <th className="p-3">Note</th>
+                    <th className="p-3">Amount</th>
+                    <th className="p-3">CreateAt</th>
+                    <th className="p-3 text-center">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {data.map((item) => (
+                    <tr key={item.id} className="text-[13px] hover:bg-gray-50">
+                      <td className="p-3">{item.title}</td>
+                      <td className="p-3">{item.cashAccountName}</td>
+                      <td className="p-3">{item.revenueAccountName}</td>
+                      <td className="p-3">{item.sourceType}</td>
+                      <td className="p-3">{item.description}</td>
+                      <td className="p-3 text-[#0ab39c] font-bold">
+                        {(item.amount || 0).toLocaleString("en-US", {
+                          style: "currency",
+                          currency: "USD",
+                        })}
+                      </td>
+                      <td className="p-3">
+                        {new Date(item.createdAt).toLocaleDateString("en-US", {
+                          month: "2-digit",
+                          day: "2-digit",
+                          year: "2-digit",
+                        })}
+                      </td>
+                      <td className="p-3 text-center">
+                        <div className="flex gap-2 justify-center">
+                          <button
+                            onClick={() => handleEdit(item)}
+                            className="bg-[#299cdb] text-white px-3 py-1 rounded text-[11px]"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => { setSelectedItem(item); setOpenDelete(true); }}
+                            className="bg-[#f06548] text-white px-3 py-1 rounded text-[11px]"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          </td>
 
-        </tr>
-      ))}
-    </tbody>
-  </table>
-</div>
+            {/* ══════════════════════════════════════════
+                MOBILE CARDS  (shown only on mobile)
+            ══════════════════════════════════════════ */}
+            <div className="block md:hidden divide-y divide-gray-100">
+              {data.map((item) => (
+                <div key={item.id} className="px-4 py-3 hover:bg-gray-50">
 
-          <div className="p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-             <span className="text-[13px] text-[#878a99]">Showing {startIndex} to {endIndex} of {totalItems} Results</span>
-             <div className="flex gap-1">
-               <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)} className="p-1.5 border rounded"><ChevronLeft size={16} /></button>
-               {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                 <button key={page} onClick={() => setCurrentPage(page)} className={`px-3 py-1.5 rounded text-[13px] ${currentPage === page ? "bg-[#405189] text-white" : "border"}`}>{page}</button>
-               ))}
-               <button disabled={currentPage >= totalPages} onClick={() => setCurrentPage(p => p + 1)} className="p-1.5 border rounded"><ChevronRight size={16} /></button>
-             </div>
+                  {/* Row 1: title (left) + amount (right) */}
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <span className="text-[13px] font-semibold text-[#495057] truncate">
+                      {item.title}
+                    </span>
+                    <span className="text-[13px] font-bold text-[#0ab39c] shrink-0">
+                      {(item.amount || 0).toLocaleString("en-US", {
+                        style: "currency",
+                        currency: "USD",
+                      })}
+                    </span>
+                  </div>
+
+                  {/* Row 2: cash acc (left) + revenue acc (right) */}
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <span className="text-[11px] text-gray-400 truncate">
+                      {item.cashAccountName}
+                    </span>
+                    <span className="text-[11px] text-gray-400 truncate text-right">
+                      {item.revenueAccountName}
+                    </span>
+                  </div>
+
+                  {/* Row 3: source (left) + date (right) */}
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <span className="text-[11px] text-gray-400 truncate">
+                      {item.sourceType || "—"}
+                      {item.description && (
+                        <span className="ml-1 text-gray-300">· {item.description}</span>
+                      )}
+                    </span>
+                    <span className="text-[11px] text-gray-400 shrink-0">
+                      {new Date(item.createdAt).toLocaleDateString("en-US", {
+                        month: "2-digit",
+                        day: "2-digit",
+                        year: "2-digit",
+                      })}
+                    </span>
+                  </div>
+
+                  {/* Row 4: buttons */}
+                  <div className="flex justify-end gap-1.5">
+                    <button
+                      onClick={() => handleEdit(item)}
+                      className="bg-[#299cdb] text-white px-2.5 py-1 rounded text-[11px] leading-none"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => { setSelectedItem(item); setOpenDelete(true); }}
+                      className="bg-[#f06548] text-white px-2.5 py-1 rounded text-[11px] leading-none"
+                    >
+                      Remove
+                    </button>
+                  </div>
+
+                </div>
+              ))}
+            </div>
+
+          </div>
+
+          <div className="p-4 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-gray-100">
+            <span className="text-[13px] text-[#878a99]">Showing {startIndex} to {endIndex} of {totalItems} Results</span>
+            <div className="flex gap-1 flex-wrap justify-center">
+              <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)} className="p-1.5 border rounded disabled:opacity-40"><ChevronLeft size={16} /></button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button key={page} onClick={() => setCurrentPage(page)} className={`px-3 py-1.5 rounded text-[13px] ${currentPage === page ? "bg-[#405189] text-white" : "border"}`}>{page}</button>
+              ))}
+              <button disabled={currentPage >= totalPages} onClick={() => setCurrentPage(p => p + 1)} className="p-1.5 border rounded disabled:opacity-40"><ChevronRight size={16} /></button>
+            </div>
           </div>
         </div>
       </div>
-      
-<DepositFormModal
-  open={openForm}
-  onClose={() => setOpenForm(false)}
-  onSubmit={async (data: CreateRevenueRequest) => {
-    try {
-      if (isEdit && selectedItem) {
-        // UPDATE
-       await AccountService.updateRevenue(selectedItem.id, data);
-        toast.success("Transaction updated");
-      } else {
-        // ADD
-        await AccountService.createRevenue(data);
-        toast.success("Transaction created");
-      }
 
-      setOpenForm(false);
-      loadData(currentPage); // refresh table
-    } catch (err) {
-      toast.error("Save failed");
-    }
-  }}
-/>
+      <DepositFormModal
+        open={openForm}
+        onClose={() => setOpenForm(false)}
+        onSubmit={async (data: CreateRevenueRequest) => {
+          try {
+            if (isEdit && selectedItem) {
+              await AccountService.updateRevenue(selectedItem.id, data);
+              toast.success("Transaction updated");
+            } else {
+              await AccountService.createRevenue(data);
+              toast.success("Transaction created");
+            }
+            setOpenForm(false);
+            loadData(currentPage);
+          } catch (err) {
+            toast.error("Save failed");
+          }
+        }}
+      />
       <ConfirmDeleteModal open={openDelete} loading={deleting} onClose={() => setOpenDelete(false)} onConfirm={confirmDelete} />
     </div>
   );

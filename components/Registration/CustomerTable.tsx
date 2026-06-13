@@ -107,47 +107,32 @@ function ActionDropdown({
         </button>
 
         {open && (
-          <div className="absolute right-0 mt-1 w-44 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg z-50 py-1 text-[13px]">
-
-            {/* Deposit */}
+          <div className="absolute right-0 bottom-full mb-1 w-44 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg z-50 py-1 text-[13px]">
             <button
               onClick={() => { setOpen(false); onDeposit(item); }}
               className="w-full text-left px-4 py-2 flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-[#0ab39c] dark:text-emerald-400 font-medium transition-colors"
             >
-              <PiggyBank size={14} />
-              Deposit
+              <PiggyBank size={14} /> Deposit
             </button>
-
-            {/* Withdraw */}
             <button
               onClick={() => { setOpen(false); onWithdraw(item); }}
               className="w-full text-left px-4 py-2 flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-[#f7b731] dark:text-yellow-400 font-medium transition-colors"
             >
-              <ArrowUpDown size={14} />
-              Withdraw
+              <ArrowUpDown size={14} /> Withdraw
             </button>
-
-            {/* Loan */}
             <button
               onClick={() => { setOpen(false); onLoan(item); }}
               className="w-full text-left px-4 py-2 flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-[#405189] dark:text-blue-400 font-medium transition-colors"
             >
-              <CreditCard size={14} />
-              Loan
+              <CreditCard size={14} /> Loan
             </button>
-
-            {/* DIVIDER */}
             <div className="border-t border-gray-100 dark:border-gray-700 my-1" />
-
-            {/* Create Account */}
             <button
               onClick={() => { setOpen(false); onCreateAccount(item); }}
               className="w-full text-left px-4 py-2 flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-[#f06548] font-medium transition-colors"
             >
-              <CreditCard size={14} />
-              Create Account
+              <CreditCard size={14} /> Create Account
             </button>
-
           </div>
         )}
       </div>
@@ -166,28 +151,22 @@ export default function CustomerTable() {
   const [totalItems, setTotalItems] = useState(0);
   const itemsPerPage = 10;
 
-  // Customer modal state
   const [openModal, setOpenModal] = useState(false);
   const [mode, setMode] = useState<"add" | "edit">("add");
   const [selectedItem, setSelectedItem] = useState<CustomerDto | null>(null);
 
-  // Delete modal state
   const [openDelete, setOpenDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  // Loan modal state
   const [openLoanModal, setOpenLoanModal] = useState(false);
   const [loanCustomer, setLoanCustomer] = useState<CustomerDto | null>(null);
 
-  // Deposit modal state
   const [openDepositModal, setOpenDepositModal] = useState(false);
   const [depositCustomer, setDepositCustomer] = useState<CustomerDto | null>(null);
 
-  // Withdraw modal state
   const [openWithdrawModal, setOpenWithdrawModal] = useState(false);
   const [withdrawCustomer, setWithdrawCustomer] = useState<CustomerDto | null>(null);
 
-  // Account modal state — KU DAR
   const [openAccountModal, setOpenAccountModal] = useState(false);
   const [accountCustomer, setAccountCustomer] = useState<CustomerDto | null>(null);
 
@@ -309,84 +288,156 @@ export default function CustomerTable() {
             </div>
           </div>
 
-          <div className="overflow-x-auto relative min-h-[300px]">
+          {/* ─────────────────────────────────────────────
+              TABLE BODY AREA — with loading overlay
+          ───────────────────────────────────────────── */}
+          <div className="relative min-h-[300px]">
             {loading && (
               <div className="absolute inset-0 bg-white/40 dark:bg-gray-800/40 z-10 flex items-center justify-center">
                 <Loader2 className="animate-spin text-[#405189]" size={30} />
               </div>
             )}
 
-            <table className="w-full text-left border-collapse">
-              <thead className="bg-[#f3f6f9] dark:bg-gray-700/50 text-[#878a99] text-[13px] font-bold uppercase border-y border-gray-200 dark:border-gray-700">
-                <tr>
-                  <th className="p-3 w-10 text-center">
-                    <input type="checkbox" className="rounded border-gray-300" />
-                  </th>
-                  <th className="p-3">Full Name</th>
-                  <th className="p-3">Phone</th>
-                  <th className="p-3">Email</th>
-                  <th className="p-3 text-center">Gender</th>
-                  <th className="p-3">Location</th>
-                  <th className="p-3 text-center">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                {data.length === 0 && !loading ? (
+            {/* ══════════════════════════════════════════
+                DESKTOP TABLE  (hidden on mobile)
+            ══════════════════════════════════════════ */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead className="bg-[#f3f6f9] dark:bg-gray-700/50 text-[#878a99] text-[13px] font-bold uppercase border-y border-gray-200 dark:border-gray-700">
                   <tr>
-                    <td colSpan={7} className="p-6 text-center text-gray-400 italic text-sm">
-                      No records found
-                    </td>
+                    <th className="p-3 w-10 text-center">
+                      <input type="checkbox" className="rounded border-gray-300" />
+                    </th>
+                    <th className="p-3">Full Name</th>
+                    <th className="p-3">Phone</th>
+                    <th className="p-3">Email</th>
+                    <th className="p-3 text-center">Gender</th>
+                    <th className="p-3">Location</th>
+                    <th className="p-3 text-center">Action</th>
                   </tr>
-                ) : (
-                  data.map((item) => (
-                    <tr
-                      key={item.id}
-                      className="text-[13px] dark:text-gray-300 hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors"
-                    >
-                      <td className="p-3 text-center">
-                        <input type="checkbox" className="rounded border-gray-300" />
-                      </td>
-                      <td className="p-3 font-semibold text-[#405189] dark:text-blue-400">
-                        {item.fullName}
-                      </td>
-                      <td className="p-3 font-medium text-[#212529] dark:text-gray-200">
-                        {item.phoneNumber}
-                      </td>
-                      <td className="p-3 text-gray-500">{item.email}</td>
-                      <td className="p-3 text-center">
-                        <span className={`px-2 py-[2px] rounded text-[10px] font-bold uppercase tracking-wider ${item.gender === 0 ? "bg-blue-100 text-blue-600" : "bg-pink-100 text-pink-600"
-                          }`}>
-                          {item.gender === 0 ? "MALE" : "FEMALE"}
-                        </span>
-                      </td>
-                      <td className="p-3 text-gray-500 italic">{item.address}</td>
-                      <td className="p-3">
-                        <ActionDropdown
-                          item={item}
-                          canEdit={canEdit}
-                          canDelete={canDelete}
-                          onEdit={(i) => { setMode("edit"); setSelectedItem(i); setOpenModal(true); }}
-                          onDelete={(i) => { setSelectedItem(i); setOpenDelete(true); }}
-                          onLoan={(i) => { setLoanCustomer(i); setOpenLoanModal(true); }}
-                          onDeposit={(i) => { setDepositCustomer(i); setOpenDepositModal(true); }}
-                          onWithdraw={(i) => { setWithdrawCustomer(i); setOpenWithdrawModal(true); }}
-                          onCreateAccount={(i) => { setAccountCustomer(i); setOpenAccountModal(true); }}
-                        />
+                </thead>
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                  {data.length === 0 && !loading ? (
+                    <tr>
+                      <td colSpan={7} className="p-6 text-center text-gray-400 italic text-sm">
+                        No records found
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ) : (
+                    data.map((item) => (
+                      <tr
+                        key={item.id}
+                        className="text-[13px] dark:text-gray-300 hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors"
+                      >
+                        <td className="p-3 text-center">
+                          <input type="checkbox" className="rounded border-gray-300" />
+                        </td>
+                        <td className="p-3 font-semibold text-[#405189] dark:text-blue-400">
+                          {item.fullName}
+                        </td>
+                        <td className="p-3 font-medium text-[#212529] dark:text-gray-200">
+                          {item.phoneNumber}
+                        </td>
+                        <td className="p-3 text-gray-500">{item.email}</td>
+                        <td className="p-3 text-center">
+                          <span className={`px-2 py-[2px] rounded text-[10px] font-bold uppercase tracking-wider ${item.gender === 0 ? "bg-blue-100 text-blue-600" : "bg-pink-100 text-pink-600"}`}>
+                            {item.gender === 0 ? "MALE" : "FEMALE"}
+                          </span>
+                        </td>
+                        <td className="p-3 text-gray-500 italic">{item.address}</td>
+                        <td className="p-3">
+                          <ActionDropdown
+                            item={item}
+                            canEdit={canEdit}
+                            canDelete={canDelete}
+                            onEdit={(i) => { setMode("edit"); setSelectedItem(i); setOpenModal(true); }}
+                            onDelete={(i) => { setSelectedItem(i); setOpenDelete(true); }}
+                            onLoan={(i) => { setLoanCustomer(i); setOpenLoanModal(true); }}
+                            onDeposit={(i) => { setDepositCustomer(i); setOpenDepositModal(true); }}
+                            onWithdraw={(i) => { setWithdrawCustomer(i); setOpenWithdrawModal(true); }}
+                            onCreateAccount={(i) => { setAccountCustomer(i); setOpenAccountModal(true); }}
+                          />
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* ══════════════════════════════════════════
+                MOBILE CARDS  (shown only on mobile)
+            ══════════════════════════════════════════ */}
+            <div className="block md:hidden divide-y divide-gray-100 dark:divide-gray-700">
+              {data.length === 0 && !loading ? (
+                <div className="p-6 text-center text-gray-400 italic text-sm">
+                  No records found
+                </div>
+              ) : (
+                data.map((item) => (
+                  <div key={item.id} className="p-4 mx-3 my-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
+
+                    {/* Row 1: name + gender badge + actions */}
+                    <div className="flex items-start justify-between gap-2 mb-3">
+                      <div className="flex flex-col gap-2.5">
+                        <span className="text-[15px] font-bold text-[#405189] dark:text-blue-400 leading-tight">
+                          {item.fullName}
+                        </span>
+                        <span className={`inline-block w-fit px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${item.gender === 0
+                            ? "bg-blue-100 text-blue-600"
+                            : "bg-pink-100 text-pink-600"
+                          }`}>
+                          {item.gender === 0 ? "Male" : "Female"}
+                        </span>
+                      </div>
+
+                      <ActionDropdown
+                        item={item}
+                        canEdit={canEdit}
+                        canDelete={canDelete}
+                        onEdit={(i) => { setMode("edit"); setSelectedItem(i); setOpenModal(true); }}
+                        onDelete={(i) => { setSelectedItem(i); setOpenDelete(true); }}
+                        onLoan={(i) => { setLoanCustomer(i); setOpenLoanModal(true); }}
+                        onDeposit={(i) => { setDepositCustomer(i); setOpenDepositModal(true); }}
+                        onWithdraw={(i) => { setWithdrawCustomer(i); setOpenWithdrawModal(true); }}
+                        onCreateAccount={(i) => { setAccountCustomer(i); setOpenAccountModal(true); }}
+                      />
+                    </div>
+
+                    {/* Divider */}
+                    <div className="border-t border-dashed border-gray-100 dark:border-gray-700 mb-3" />
+
+                    {/* Row 2: chips */}
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="flex items-center gap-1.5 border border-gray-200 dark:border-gray-600 rounded-full px-3 py-1 text-[11px] text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 font-medium">
+                        📞 {item.phoneNumber}
+                      </span>
+                      {item.email && (
+                        <span className="flex items-center gap-1.5 border border-gray-200 dark:border-gray-600 rounded-full px-3 py-1 text-[11px] text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 font-medium">
+                          ✉️ {item.email}
+                        </span>
+                      )}
+                      {item.address && (
+                        <span className="flex items-center gap-1.5 border border-gray-200 dark:border-gray-600 rounded-full px-3 py-1 text-[11px] text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 font-medium">
+                          📍 {item.address}
+                        </span>
+                      )}
+                    </div>
+
+                  </div>
+                ))
+              )}
+            </div>
+
           </div>
 
-          <div className="p-4 flex items-center justify-between border-t border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800">
+          <div className="p-4 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800">
             <span className="text-[13px] text-[#878a99]">
               Showing <span className="font-semibold">{startIndex}</span> to{" "}
               <span className="font-semibold">{endIndex}</span> of{" "}
               <span className="font-semibold">{totalItems}</span> Results
             </span>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 flex-wrap justify-center">
               <button
                 disabled={currentPage === 1 || loading}
                 onClick={() => setCurrentPage((p) => p - 1)}
@@ -440,7 +491,6 @@ export default function CustomerTable() {
         onSubmit={handleFormSubmit}
       />
 
-      {/* Confirm Delete Modal */}
       <ConfirmDeleteModal
         open={openDelete}
         loading={deleting}
@@ -448,7 +498,6 @@ export default function CustomerTable() {
         onConfirm={confirmDelete}
       />
 
-      {/* Loan Modal */}
       {openLoanModal && loanCustomer && (
         <LoanFormModal
           open={openLoanModal}
@@ -462,7 +511,7 @@ export default function CustomerTable() {
               setOpenLoanModal(false);
               setLoanCustomer(null);
               loadData(currentPage, search);
-              router.push("/dashboard/loans"); 
+              router.push("/dashboard/loans");
             } catch (error: any) {
               toast.error(error.response?.data?.message || "Loan failed");
             }
@@ -470,7 +519,6 @@ export default function CustomerTable() {
         />
       )}
 
-      {/* Deposit Modal */}
       {openDepositModal && depositCustomer && (
         <DepositFormModal
           open={openDepositModal}
@@ -484,7 +532,7 @@ export default function CustomerTable() {
               setOpenLoanModal(false);
               setLoanCustomer(null);
               loadData(currentPage, search);
-              router.push("/dashboard/deposits"); 
+              router.push("/dashboard/deposits");
             } catch (error: any) {
               toast.error(error.response?.data?.message || "Loan failed");
             }
@@ -492,7 +540,6 @@ export default function CustomerTable() {
         />
       )}
 
-      {/* Withdraw Modal */}
       {openWithdrawModal && withdrawCustomer && (
         <WithdrawFormModal
           open={openWithdrawModal}
@@ -506,7 +553,7 @@ export default function CustomerTable() {
               setOpenLoanModal(false);
               setLoanCustomer(null);
               loadData(currentPage, search);
-              router.push("/dashboard/withdrawals"); 
+              router.push("/dashboard/withdrawals");
             } catch (error: any) {
               toast.error(error.response?.data?.message || "Loan failed");
             }
@@ -528,7 +575,7 @@ export default function CustomerTable() {
               setOpenLoanModal(false);
               setLoanCustomer(null);
               loadData(currentPage, search);
-              router.push("/dashboard/accounts"); 
+              router.push("/dashboard/accounts");
             } catch (error: any) {
               toast.error(error.response?.data?.message || "Loan failed");
             }

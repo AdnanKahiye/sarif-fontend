@@ -119,72 +119,139 @@ export default function RepaymentTable() {
             </div>
           </div>
 
-          <div className="overflow-x-auto min-h-[300px] relative">
+          {/* ─────────────────────────────────────────────
+              TABLE BODY AREA — with loading overlay
+          ───────────────────────────────────────────── */}
+          <div className="relative min-h-[200px]">
             {loading && (
               <div className="absolute inset-0 flex items-center justify-center bg-white/50 z-10">
                 <Loader2 className="animate-spin text-[#405189]" size={30} />
               </div>
             )}
 
-            <table className="w-full text-left border-collapse">
-              <thead className="bg-[#f3f6f9] text-[#878a99] text-[13px] font-bold uppercase border-b border-gray-200">
-                <tr>
-                  <th className="p-3">Cash Acc</th>
-                  <th className="p-3">Customer Acc</th>
-                  <th className="p-3">Note</th>
-                  <th className="p-3">Amount</th>
-                  <th className="p-3">CreateAt</th>
-                  <th className="p-3 text-center">Action</th>
-                </tr>
-              </thead>
+            {/* ══════════════════════════════════════════
+                DESKTOP TABLE  (hidden on mobile)
+            ══════════════════════════════════════════ */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead className="bg-[#f3f6f9] text-[#878a99] text-[13px] font-bold uppercase border-b border-gray-200">
+                  <tr>
+                    <th className="p-3">Cash Acc</th>
+                    <th className="p-3">Customer Acc</th>
+                    <th className="p-3">Note</th>
+                    <th className="p-3">Amount</th>
+                    <th className="p-3">CreateAt</th>
+                    <th className="p-3 text-center">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {data.map((item) => (
+                    <tr key={item.id} className="text-[13px] hover:bg-gray-50">
+                      <td className="p-3">{item.cashAccountName}</td>
+                      <td className="p-3">{item.loanAccountName}</td>
+                      <td className="p-3">{item.note}</td>
+                      <td className="p-3 text-[#0ab39c] font-bold">
+                        {(item.amount || 0).toLocaleString("en-US", {
+                          style: "currency",
+                          currency: "USD",
+                        })}
+                      </td>
+                      <td className="p-3">
+                        {new Date(item.paymentDate).toLocaleDateString("en-US", {
+                          month: "2-digit",
+                          day: "2-digit",
+                          year: "2-digit",
+                        })}
+                      </td>
+                      <td className="p-3 text-center">
+                        <div className="flex gap-2 justify-center">
+                          <button
+                            onClick={() => handleEdit(item)}
+                            className="bg-[#299cdb] text-white px-3 py-1 rounded text-[11px]"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => { setSelectedItem(item); setOpenDelete(true); }}
+                            className="bg-[#f06548] text-white px-3 py-1 rounded text-[11px]"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-              <tbody className="divide-y divide-gray-100">
-                {data.map((item) => (
-                  <tr key={item.id} className="text-[13px] hover:bg-gray-50">
-                    <td className="p-3">{item.cashAccountName}</td>
-                    <td className="p-3">{item.loanAccountName}</td>
-                    <td className="p-3">{item.note}</td>
-                    <td className="p-3 text-[#0ab39c] font-bold">
+            {/* ══════════════════════════════════════════
+                MOBILE CARDS  (shown only on mobile)
+            ══════════════════════════════════════════ */}
+            <div className="block md:hidden divide-y divide-gray-100">
+              {data.map((item) => (
+                <div key={item.id} className="px-4 py-3 hover:bg-gray-50">
+
+                  {/* Row 1: cash account (left) + amount (right) */}
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <span className="text-[13px] font-semibold text-[#495057] truncate">
+                      {item.cashAccountName}
+                    </span>
+                    <span className="text-[13px] font-bold text-[#0ab39c] shrink-0">
                       {(item.amount || 0).toLocaleString("en-US", {
                         style: "currency",
                         currency: "USD",
                       })}
-                    </td>
-                    <td className="p-3">
+                    </span>
+                  </div>
+
+                  {/* Row 2: loan account (left) + date (right) */}
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <span className="text-[12px] text-gray-400 truncate">
+                      {item.loanAccountName}
+                    </span>
+                    <span className="text-[11px] text-gray-400 shrink-0">
                       {new Date(item.paymentDate).toLocaleDateString("en-US", {
                         month: "2-digit",
                         day: "2-digit",
                         year: "2-digit",
                       })}
-                    </td>
-                    <td className="p-3 text-center">
-                      <div className="flex gap-2 justify-center">
-                        <button
-                          onClick={() => handleEdit(item)}
-                          className="bg-[#299cdb] text-white px-3 py-1 rounded text-[11px]"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => { setSelectedItem(item); setOpenDelete(true); }}
-                          className="bg-[#f06548] text-white px-3 py-1 rounded text-[11px]"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </span>
+                  </div>
+
+                  {/* Row 3: note (left) + action buttons (right) */}
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[11px] text-gray-400 truncate">
+                      {item.note || "—"}
+                    </span>
+                    {/* <div className="flex gap-1.5 shrink-0">
+                      <button
+                        onClick={() => handleEdit(item)}
+                        className="bg-[#299cdb] text-white px-2.5 py-1 rounded text-[11px] leading-none"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => { setSelectedItem(item); setOpenDelete(true); }}
+                        className="bg-[#f06548] text-white px-2.5 py-1 rounded text-[11px] leading-none"
+                      >
+                        Remove
+                      </button>
+                    </div> */}
+                  </div>
+
+                </div>
+              ))}
+            </div>
+
           </div>
 
-          <div className="p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="p-4 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-gray-100">
             <span className="text-[13px] text-[#878a99]">
               Showing {startIndex} to {endIndex} of {totalItems} Results
             </span>
-            <div className="flex gap-1">
-              <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)} className="p-1.5 border rounded">
+            <div className="flex gap-1 flex-wrap justify-center">
+              <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)} className="p-1.5 border rounded disabled:opacity-40">
                 <ChevronLeft size={16} />
               </button>
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
@@ -196,7 +263,7 @@ export default function RepaymentTable() {
                   {page}
                 </button>
               ))}
-              <button disabled={currentPage >= totalPages} onClick={() => setCurrentPage(p => p + 1)} className="p-1.5 border rounded">
+              <button disabled={currentPage >= totalPages} onClick={() => setCurrentPage(p => p + 1)} className="p-1.5 border rounded disabled:opacity-40">
                 <ChevronRight size={16} />
               </button>
             </div>

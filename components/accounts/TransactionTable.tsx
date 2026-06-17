@@ -17,12 +17,12 @@ interface TransactionDto {
   totalAmount: number;
   agencyName: string;
   userName: string;
-  details: any[]; // Waxaan ka dhigay any[] si uu u qaado array-gaaga
+  details: any[];
 }
 
 export default function TransactionTable() {
   const { hasPermission } = usePermission();
-  
+
   const [data, setData] = useState<TransactionDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -70,41 +70,52 @@ export default function TransactionTable() {
     }
   };
 
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
   const startIndex = totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
   const endIndex = Math.min(currentPage * itemsPerPage, totalItems);
 
+  const getPageNumbers = () => {
+    const delta = 2;
+    const range: number[] = [];
+    for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
+      range.push(i);
+    }
+    if (currentPage - delta > 2) range.unshift(-1);
+    if (currentPage + delta < totalPages - 1) range.push(-2);
+    if (totalPages > 1) range.unshift(1);
+    if (totalPages > 1) range.push(totalPages);
+    return [...new Set(range)];
+  };
+
   return (
-    <div className="bg-[#f3f3f9] dark:bg-gray-900 min-h-screen p-4 sm:p-6 font-sans text-[#495057]">
+    <div className="bg-[#f3f3f9] dark:bg-gray-900 min-h-screen p-3 sm:p-4 md:p-6 font-sans text-[#495057]">
       <div className="mx-auto max-w-7xl">
-             {/* Header */}
+
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-[15px] font-bold dark:text-gray-200 uppercase tracking-wide">Transaction List</h2>
-          <div className="text-[13px] font-medium">
+          <div className="text-[13px] font-medium hidden sm:block">
             Account <span className="text-gray-400 mx-1">&gt;</span> <span className="text-gray-400">Transactions</span>
           </div>
         </div>
 
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-sm overflow-hidden">
-          <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex flex-col md:flex-row items-center justify-between gap-4">
-            <button className="bg-[#0ab39c] text-white px-4 py-2 rounded text-[13px] opacity-80 cursor-not-allowed">
-              + Add Transaction
-            </button>
-            <div className="relative w-full md:w-64">
-              <input
-                type="text"
-                placeholder="Search..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded text-[13px] focus:outline-none dark:bg-gray-900"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
+
+          <div className="border-b border-gray-100 dark:border-gray-700 p-4">
+            <h3 className="text-[16px] font-semibold text-[#495057] dark:text-gray-300">Add, Edit & Remove</h3>
+          </div>
+
+          <div className="p-3 sm:p-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+            <button className="bg-[#0ab39c] text-white px-4 py-2 rounded text-[13px] opacity-80 cursor-not-allowed w-full sm:w-auto">+ Add Transaction</button>
+            <div className="relative w-full sm:w-64">
+              <input type="text" placeholder="Search..." className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded text-[13px] focus:outline-none dark:bg-gray-900" value={search} onChange={(e) => setSearch(e.target.value)} />
               <Search className="absolute left-3 top-2.5 text-gray-400" size={16} />
             </div>
           </div>
 
-          <div className="overflow-x-auto relative min-h-[300px]">
-            {loading && (
-              <div className="absolute inset-0 bg-white/40 z-10 flex items-center justify-center">
+          {/* DESKTOP TABLE */}
+          <div className="hidden md:block overflow-x-auto relative min-h-[300px]">
+            {loading && data.length > 0 && (
+              <div className="absolute inset-0 bg-white/50 dark:bg-gray-800/50 z-10 flex items-center justify-center">
                 <Loader2 className="animate-spin text-[#405189]" size={30} />
               </div>
             )}
@@ -120,89 +131,136 @@ export default function TransactionTable() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {data.map((item) => (
-                  <tr key={item.id} className="text-[13px] hover:bg-gray-50">
-                    <td className="p-3">{item.transactionType}</td>
-                    <td className="p-3">{item.status}</td>
-                    <td className="p-3">{item.referenceNo}</td>
-                    <td className="p-3">${item.totalAmount?.toFixed(2)}</td>
-                    <td className="p-3">{item.agencyName}</td>
-                    <td className="p-3 text-center">
-                      <div className="flex items-center justify-center gap-2">
-                        <button 
-                          onClick={() => { setSelectedItem(item); setOpenModal(true); }} 
-                          className="bg-[#299cdb] text-white px-3 py-1 rounded text-[11px]"
-                        >
-                          View
-                        </button>
-                        <button 
-                          onClick={() => { setSelectedItem(item); setOpenDelete(true); }} 
-                          className="bg-[#f06548] text-white px-3 py-1 rounded text-[11px]"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                {loading && data.length === 0 ? (
+                  <SkeletonRows />
+                ) : data.length === 0 ? (
+                  <tr><td colSpan={6} className="p-6 text-center text-gray-500">No transactions found</td></tr>
+                ) : (
+                  data.map((item) => (
+                    <tr key={item.id} className="text-[13px] hover:bg-gray-50">
+                      <td className="p-3">{item.transactionType}</td>
+                      <td className="p-3">{item.status}</td>
+                      <td className="p-3">{item.referenceNo}</td>
+                      <td className="p-3">${item.totalAmount?.toFixed(2)}</td>
+                      <td className="p-3">{item.agencyName}</td>
+                      <td className="p-3 text-center">
+                        <div className="flex items-center justify-center gap-2">
+                          <button onClick={() => { setSelectedItem(item); setOpenModal(true); }} className="bg-[#299cdb] text-white px-3 py-1 rounded text-[11px]">View</button>
+                          <button onClick={() => { setSelectedItem(item); setOpenDelete(true); }} className="bg-[#f06548] text-white px-3 py-1 rounded text-[11px]">Remove</button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
 
-         {/* Pagination Footer - Sida asalkii hore */}
-<div className="p-4 flex items-center justify-between border-t border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800">
-  <span className="text-[13px] text-[#878a99]">
-    Showing <span className="font-semibold">{startIndex}</span> to <span className="font-semibold">{endIndex}</span> of <span className="font-semibold">{totalItems}</span> Results
-  </span>
-  <div className="flex items-center gap-1">
-    <button 
-      disabled={currentPage === 1 || loading}
-      onClick={() => setCurrentPage(p => p - 1)}
-      className="p-1.5 border border-gray-200 dark:border-gray-700 rounded disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700"
-    >
-      <ChevronLeft size={16} />
-    </button>
-    
-    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-      <button
-        key={page}
-        onClick={() => setCurrentPage(page)}
-        className={`px-3 py-1.5 rounded text-[13px] transition-all ${
-          currentPage === page 
-            ? "bg-[#405189] text-white shadow-md font-bold" 
-            : "border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"
-        }`}
-      >
-        {page}
-      </button>
-    ))}
+          {/* MOBILE CARDS */}
+          <div className="md:hidden relative">
+            {loading && data.length > 0 && (
+              <div className="absolute inset-0 bg-white/60 dark:bg-gray-800/60 z-10 flex items-center justify-center">
+                <Loader2 className="animate-spin text-[#405189]" size={28} />
+              </div>
+            )}
+            {loading && data.length === 0 ? (
+              <MobileSkeletonCards />
+            ) : data.length === 0 ? (
+              <p className="p-6 text-center text-gray-500 text-[13px]">No transactions found</p>
+            ) : (
+              <div className="divide-y divide-gray-100 dark:divide-gray-700">
+                {data.map((item) => (
+                  <div key={item.id} className="p-4 hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-[14px] font-semibold text-[#212529] dark:text-gray-200">
+                        {item.referenceNo || `TXN-${item.id.slice(0, 6)}`}
+                      </span>
+                      <span className="text-[14px] font-bold text-[#0ab39c]">${item.totalAmount?.toFixed(2)}</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 mb-3">
+                      <div>
+                        <p className="text-[10px] uppercase tracking-wider text-[#878a99] font-medium mb-0.5">Type</p>
+                        <p className="text-[12px] text-[#495057] dark:text-gray-300">{item.transactionType}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase tracking-wider text-[#878a99] font-medium mb-0.5">Status</p>
+                        <p className="text-[12px] text-[#495057] dark:text-gray-300">{item.status}</p>
+                      </div>
+                      <div className="col-span-2">
+                        <p className="text-[10px] uppercase tracking-wider text-[#878a99] font-medium mb-0.5">Agency</p>
+                        <p className="text-[12px] text-[#495057] dark:text-gray-300">{item.agencyName}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 pt-2 border-t border-gray-100 dark:border-gray-700">
+                      <button onClick={() => { setSelectedItem(item); setOpenModal(true); }} className="bg-[#299cdb] text-white px-4 py-1.5 rounded text-[12px] flex-1">View</button>
+                      <button onClick={() => { setSelectedItem(item); setOpenDelete(true); }} className="bg-[#f06548] text-white px-4 py-1.5 rounded text-[12px] flex-1">Remove</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
-    <button 
-      disabled={currentPage >= totalPages || loading}
-      onClick={() => setCurrentPage(p => p + 1)}
-      className="p-1.5 border border-gray-200 dark:border-gray-700 rounded disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700"
-    >
-      <ChevronRight size={16} />
-    </button>
-  </div>
-</div>
+          {/* PAGINATION */}
+          <div className="p-3 sm:p-4 flex flex-col sm:flex-row items-center justify-between border-t border-gray-100 dark:border-gray-700 gap-3 bg-white dark:bg-gray-800">
+            <span className="text-[13px] text-[#878a99] order-2 sm:order-1">
+              Showing <span className="font-semibold">{startIndex}</span> to <span className="font-semibold">{endIndex}</span> of <span className="font-semibold">{totalItems}</span> Results
+            </span>
+            <div className="flex items-center gap-1 flex-wrap justify-center order-1 sm:order-2">
+              <button disabled={currentPage === 1 || loading} onClick={() => setCurrentPage(p => p - 1)} className="w-8 h-8 flex items-center justify-center border border-gray-200 dark:border-gray-600 rounded text-[13px] disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700"><ChevronLeft size={14} /></button>
+              {getPageNumbers().map((page, idx) =>
+                page < 0 ? (
+                  <span key={`ellipsis-${idx}`} className="w-8 h-8 flex items-center justify-center text-gray-400 text-[13px]">…</span>
+                ) : (
+                  <button key={page} onClick={() => setCurrentPage(page)} className={`w-8 h-8 flex items-center justify-center rounded text-[13px] ${currentPage === page ? "bg-[#405189] text-white" : "border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"}`}>{page}</button>
+                )
+              )}
+              <button disabled={currentPage >= totalPages || loading} onClick={() => setCurrentPage(p => p + 1)} className="w-8 h-8 flex items-center justify-center border border-gray-200 dark:border-gray-600 rounded text-[13px] disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700"><ChevronRight size={14} /></button>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Modal-ka oo laga saaray table-ka */}
-    {/* Halkan ku beddel initialData -> item */}
-<DetailViewModelFormModal
-  open={openModal}
-  item={selectedItem || undefined} 
-  onClose={() => setOpenModal(false)}
-/>
-
-      <ConfirmDeleteModal 
-        open={openDelete} 
-        loading={deleting} 
-        onClose={() => setOpenDelete(false)} 
-        onConfirm={confirmDelete} 
+      <DetailViewModelFormModal
+        open={openModal}
+        item={selectedItem || undefined}
+        onClose={() => setOpenModal(false)}
       />
+
+      <ConfirmDeleteModal open={openDelete} loading={deleting} onClose={() => setOpenDelete(false)} onConfirm={confirmDelete} />
+    </div>
+  );
+}
+
+function SkeletonRows() {
+  return (
+    <>
+      {[1, 2, 3, 4, 5].map(i => (
+        <tr key={i} className="animate-pulse">
+          <td colSpan={6} className="p-4 border-b border-gray-100 dark:border-gray-700">
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+          </td>
+        </tr>
+      ))}
+    </>
+  );
+}
+
+function MobileSkeletonCards() {
+  return (
+    <div className="divide-y divide-gray-100 dark:divide-gray-700">
+      {[1, 2, 3, 4].map((i) => (
+        <div key={i} className="p-4 animate-pulse space-y-3">
+          <div className="flex justify-between">
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded"></div>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

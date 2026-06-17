@@ -154,7 +154,9 @@ export default function ExpensesTable() {
         </div>
 
         {/* TABLE */}
-        <div className="overflow-x-auto">
+        <div className="relative">
+          {/* Desktop table */}
+          <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-gray-600 uppercase text-xs tracking-wider">
               <tr>
@@ -238,6 +240,31 @@ export default function ExpensesTable() {
 
             </tbody>
           </table>
+          </div>
+
+          {/* Mobile cards */}
+          <div className="block md:hidden divide-y divide-gray-100">
+            {loading ? (
+              <div className="px-6 py-10 text-center text-gray-500">Loading expenses...</div>
+            ) : filteredExpenses.length === 0 ? (
+              <div className="px-6 py-10 text-center text-gray-400">No expenses found</div>
+            ) : filteredExpenses.map((e) => (
+              <div key={e.id} className="px-4 py-3 hover:bg-gray-50 transition">
+                <div className="flex items-center justify-between gap-2 mb-1">
+                  <span className="font-medium text-gray-800 text-sm truncate">{e.categoryName}</span>
+                  <span className="font-semibold text-red-600 text-sm shrink-0">{e.amount}</span>
+                </div>
+                <div className="flex items-center justify-between gap-2 mb-1">
+                  <span className="text-xs text-gray-600 line-clamp-1">{e.remark}</span>
+                  <span className="text-[11px] text-gray-400 shrink-0">{new Date(e.createdAt).toLocaleDateString()}</span>
+                </div>
+                <div className="flex justify-end gap-1.5">
+                  <button onClick={() => { setMode("edit"); setSelectedExpense(e); setOpenModal(true); }} className="px-3 py-1 rounded-lg text-indigo-600 hover:bg-indigo-50 transition font-medium text-xs">Edit</button>
+                  <button onClick={() => { setSelectedExpense(e); setOpenDelete(true); }} className="px-3 py-1 rounded-lg text-red-600 hover:bg-red-50 transition font-medium text-xs">Delete</button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* FOOTER */}

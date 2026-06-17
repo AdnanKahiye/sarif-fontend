@@ -10,7 +10,7 @@ export default function ServiceCard({ title, href }: Props) {
   return (
     <Link
       href={href}
-      className="group relative rounded-2xl border border-gray-200 bg-white p-7 shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-lg mx-auto"  // Added mx-auto for centering and adjusted margin
+      className="group relative rounded-2xl border border-gray-200 bg-white p-5 sm:p-7 shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-lg mx-auto"
     >
       {/* Top Accent Line */}
       <span

@@ -184,113 +184,93 @@ const formatMoney = (amount?: number, currencyId?: number) => {
             </div>
           </div>
 
-         <div className="overflow-x-auto min-h-[300px] relative">
+         <div className="relative min-h-[300px]">
   {loading && (
     <div className="absolute inset-0 flex items-center justify-center bg-white/50 z-10">
       <Loader2 className="animate-spin text-[#405189]" size={30} />
     </div>
   )}
 
-  <table className="w-full text-left border-collapse">
-    <thead className="bg-[#f3f6f9] text-[#878a99] text-[13px] font-bold uppercase border-b border-gray-200">
-      <tr>
-        <th className="p-3">Sender</th>
-        {/* <th className="p-3">Sender</th>
-        <th className="p-3">Receiver</th> */}
-        <th className="p-3">Receiver </th>
-
-        <th className="p-3">From </th>
-        <th className="p-3">To</th>
-        <th className="p-3">Amount</th>
-
-        <th className="p-3">Status</th>
-        <th className="p-3">CreateAt</th>
-
-        <th className="p-3 text-center">Action</th>
-      </tr>
-    </thead>
-
-    <tbody className="divide-y divide-gray-100">
-      {data.map((item) => (
-        
-        <tr key={item.id} className="text-[13px] hover:bg-gray-50">
-
-          {/* Accounts */}
-          <td className="p-3">
-            {item.senderName} 
-          </td>
-     
-        <td className="p-3">
-            {item.receiverName} 
-          </td>
-
-            <td className="p-3">
-            {item.fromAccountName} 
-          </td>
-           <td className="p-3">
-            {item.toAccountName} 
-          </td>
-
-       
-
-          {/* TO */}
-          <td className="p-3 text-[#0ab39c] font-bold">
-            {(item.amount || 0).toLocaleString("en-US", {
-              style: "currency",
-              currency: "USD",
-            })}
-          </td>
-        
-
-              <td className="p-3">
-          {(() => {
-            const status = getDepositStatusBadge(item.status);
-            return (
-              <span className={`px-2 py-1 rounded text-xs font-medium ${status.class}`}>
-                {status.text}
-              </span>
-            );
-          })()}
-        </td>
-
-
-          {/* DATE */}
-          <td className="p-3">
-            {new Date(item.createdAt).toLocaleDateString("en-US", {
-              month: "2-digit",
-              day: "2-digit",
-              year: "2-digit",
-            })}
-          </td>
-
-    
-
-          {/* ACTION */}
-          <td className="p-3 text-center">
-            <div className="flex gap-2 justify-center">
-              <button
-                onClick={() => handleEdit(item)}
-                className="bg-[#299cdb] text-white px-3 py-1 rounded text-[11px]"
-              >
-                Edit
-              </button>
-
-              <button
-                onClick={() => {
-                  setSelectedItem(item);
-                  setOpenDelete(true);
-                }}
-                className="bg-[#f06548] text-white px-3 py-1 rounded text-[11px]"
-              >
-                Remove
-              </button>
-            </div>
-          </td>
-
+  {/* Desktop table */}
+  <div className="hidden md:block overflow-x-auto">
+    <table className="w-full text-left border-collapse">
+      <thead className="bg-[#f3f6f9] text-[#878a99] text-[13px] font-bold uppercase border-b border-gray-200">
+        <tr>
+          <th className="p-3">Sender</th>
+          <th className="p-3">Receiver </th>
+          <th className="p-3">From </th>
+          <th className="p-3">To</th>
+          <th className="p-3">Amount</th>
+          <th className="p-3">Status</th>
+          <th className="p-3">CreateAt</th>
+          <th className="p-3 text-center">Action</th>
         </tr>
-      ))}
-    </tbody>
-  </table>
+      </thead>
+      <tbody className="divide-y divide-gray-100">
+        {data.map((item) => (
+          <tr key={item.id} className="text-[13px] hover:bg-gray-50">
+            <td className="p-3">{item.senderName}</td>
+            <td className="p-3">{item.receiverName}</td>
+            <td className="p-3">{item.fromAccountName}</td>
+            <td className="p-3">{item.toAccountName}</td>
+            <td className="p-3 text-[#0ab39c] font-bold">
+              {(item.amount || 0).toLocaleString("en-US", { style: "currency", currency: "USD" })}
+            </td>
+            <td className="p-3">
+              {(() => {
+                const status = getDepositStatusBadge(item.status);
+                return (
+                  <span className={`px-2 py-1 rounded text-xs font-medium ${status.class}`}>
+                    {status.text}
+                  </span>
+                );
+              })()}
+            </td>
+            <td className="p-3">
+              {new Date(item.createdAt).toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "2-digit" })}
+            </td>
+            <td className="p-3 text-center">
+              <div className="flex gap-2 justify-center">
+                <button onClick={() => handleEdit(item)} className="bg-[#299cdb] text-white px-3 py-1 rounded text-[11px]">Edit</button>
+                <button onClick={() => { setSelectedItem(item); setOpenDelete(true); }} className="bg-[#f06548] text-white px-3 py-1 rounded text-[11px]">Remove</button>
+              </div>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+  {/* Mobile cards */}
+  <div className="block md:hidden divide-y divide-gray-100">
+    {data.map((item) => {
+      const status = getDepositStatusBadge(item.status);
+      return (
+        <div key={item.id} className="px-4 py-3 hover:bg-gray-50">
+          <div className="flex items-center justify-between gap-2 mb-1">
+            <span className="text-[13px] font-semibold text-[#495057] truncate">{item.senderName}</span>
+            <span className={`px-2 py-0.5 rounded text-[11px] font-medium whitespace-nowrap ${status.class}`}>{status.text}</span>
+          </div>
+          <div className="flex items-center justify-between gap-2 mb-1">
+            <span className="text-[12px] text-gray-500 truncate">→ {item.receiverName}</span>
+            <span className="text-[#0ab39c] font-bold text-[13px] shrink-0">
+              {(item.amount || 0).toLocaleString("en-US", { style: "currency", currency: "USD" })}
+            </span>
+          </div>
+          <div className="text-[11px] text-gray-400 mb-2 truncate">{item.fromAccountName} → {item.toAccountName}</div>
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[11px] text-gray-400">
+              {new Date(item.createdAt).toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "2-digit" })}
+            </span>
+            <div className="flex gap-1.5 shrink-0">
+              <button onClick={() => handleEdit(item)} className="bg-[#299cdb] text-white px-2.5 py-1 rounded text-[11px] leading-none">Edit</button>
+              <button onClick={() => { setSelectedItem(item); setOpenDelete(true); }} className="bg-[#f06548] text-white px-2.5 py-1 rounded text-[11px] leading-none">Remove</button>
+            </div>
+          </div>
+        </div>
+      );
+    })}
+  </div>
 </div>
 
           <div className="p-4 flex flex-col sm:flex-row items-center justify-between gap-3">

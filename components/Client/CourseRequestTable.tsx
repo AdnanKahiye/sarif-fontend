@@ -162,7 +162,9 @@ export default function CourseRequestTable() {
         </div>
 
         {/* TABLE */}
-        <div className="overflow-x-auto">
+        <div className="relative">
+          {/* Desktop table */}
+          <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-sm text-left border-collapse min-w-[950px]">
             <thead className="bg-gray-50/80 text-gray-500 uppercase text-[10px] font-bold tracking-widest border-b">
               <tr>
@@ -265,6 +267,51 @@ export default function CourseRequestTable() {
               )}
             </tbody>
           </table>
+          </div>
+
+          {/* Mobile cards */}
+          <div className="block md:hidden divide-y divide-gray-100">
+            {loading ? (
+              <div className="py-10 text-center">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-600 mx-auto" />
+                <p className="text-xs text-gray-400 mt-2">Fetching records...</p>
+              </div>
+            ) : filteredRequests.length === 0 ? (
+              <div className="py-10 text-center text-gray-400">No enrollment requests found.</div>
+            ) : filteredRequests.map((r, index) => (
+              <div key={r.id} className="px-4 py-3 hover:bg-gray-50/40 transition-colors">
+                <div className="flex items-center justify-between gap-2 mb-1.5">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 shrink-0">
+                      <User size={15} />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="font-bold text-gray-900 text-sm capitalize truncate">{r.studentName || "N/A"}</div>
+                      <div className="flex items-center gap-1 text-[11px] text-gray-500">
+                        <BookOpen size={11} className="text-gray-400 shrink-0" />
+                        <span className="font-medium text-indigo-600 truncate">{r.courseTitle}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${r.status === 'Pending' ? 'bg-amber-50 text-amber-700 ring-1 ring-amber-600/20' : 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20'}`}>{r.status}</span>
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex gap-3 text-xs">
+                    <span className="font-bold text-gray-900">${r.coursePrice}</span>
+                    <span className="text-emerald-600 font-medium">Paid: ${r.paidAmount}</span>
+                    {r.remainingAmount > 0 && <span className="text-rose-500 font-medium">Bal: ${r.remainingAmount}</span>}
+                  </div>
+                  <div className="flex gap-1.5 shrink-0">
+                    <button onClick={() => handleAssignStudent(r.studentId)} disabled={assigningId === r.studentId} title="Assign as Student" className="p-1.5 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-all disabled:opacity-50">
+                      {assigningId === r.studentId ? <Loader2 size={14} className="animate-spin" /> : <UserPlus size={14} />}
+                    </button>
+                    <button onClick={() => { setMode("edit"); setSelectedRequest(r); setOpenModal(true); }} title="Edit" className="p-1.5 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-all"><Edit3 size={14} /></button>
+                    <button onClick={() => { setSelectedRequest(r); setOpenDelete(true); }} title="Delete" className="p-1.5 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-lg transition-all"><Trash2 size={14} /></button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* PAGINATION */}

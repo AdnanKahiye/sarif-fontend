@@ -150,62 +150,78 @@ export default function MenuPermissionTable() {
           </div>
 
           {/* Table Body */}
-          <div className="overflow-x-auto relative min-h-[300px]">
+          <div className="relative min-h-75">
             {loading && (
                <div className="absolute inset-0 bg-white/40 dark:bg-gray-800/40 z-10 flex items-center justify-center">
                  <Loader2 className="animate-spin text-[#405189]" size={30} />
                </div>
             )}
 
-            <table className="w-full text-left border-collapse">
-              <thead className="bg-[#f3f6f9] dark:bg-gray-700/50 text-[#878a99] text-[13px] font-bold uppercase border-y border-gray-200 dark:border-gray-700">
-                <tr>
-                  <th className="p-3 w-10 text-center"><input type="checkbox" className="rounded border-gray-300" /></th>
-                  <th className="p-3">Menu Title</th>
-                  <th className="p-3">Parent Menu</th>
-                  <th className="p-3">Available Permissions</th>
-                  <th className="p-3 text-center">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                {data.length === 0 && !loading ? (
-                  <tr><td colSpan={5} className="p-6 text-center text-gray-400 italic text-sm">No records found</td></tr>
-                ) : (
-                  data.map((item) => (
-                    <tr key={item.menuId} className="text-[13px] dark:text-gray-300 hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors">
-                      <td className="p-3 text-center"><input type="checkbox" className="rounded border-gray-300" /></td>
-                      <td className="p-3 font-semibold text-[#405189] dark:text-blue-400">{item.menuTitle}</td>
-                      <td className="p-3 text-gray-500">{item.parentTitle || "Root"}</td>
-                      <td className="p-3">
-                        <div className="flex flex-wrap gap-1">
-                          {item.permissions.map((p, idx) => (
-                            <span key={idx} className="bg-[#0ab39c15] text-[#0ab39c] px-2 py-0.5 rounded text-[10px] font-bold uppercase">
-                              {p}
-                            </span>
-                          ))}
-                        </div>
-                      </td>
-                      <td className="p-3 text-center">
-                        <div className="flex items-center justify-center gap-2">
-                          <button 
-                            onClick={() => { setMode("edit"); setSelectedItem(item); setOpenModal(true); }} 
-                            className="bg-[#299cdb] text-white px-3 py-1 rounded text-[11px] shadow-sm hover:brightness-110"
-                          >
-                            Edit
-                          </button>
-                          <button 
-                            onClick={() => { setSelectedItem(item); setOpenDelete(true); }} 
-                            className="bg-[#f06548] text-white px-3 py-1 rounded text-[11px] shadow-sm hover:brightness-110"
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+            {/* Desktop table */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead className="bg-[#f3f6f9] dark:bg-gray-700/50 text-[#878a99] text-[13px] font-bold uppercase border-y border-gray-200 dark:border-gray-700">
+                  <tr>
+                    <th className="p-3 w-10 text-center"><input type="checkbox" className="rounded border-gray-300" /></th>
+                    <th className="p-3">Menu Title</th>
+                    <th className="p-3">Parent Menu</th>
+                    <th className="p-3">Available Permissions</th>
+                    <th className="p-3 text-center">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                  {data.length === 0 && !loading ? (
+                    <tr><td colSpan={5} className="p-6 text-center text-gray-400 italic text-sm">No records found</td></tr>
+                  ) : (
+                    data.map((item) => (
+                      <tr key={item.menuId} className="text-[13px] dark:text-gray-300 hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors">
+                        <td className="p-3 text-center"><input type="checkbox" className="rounded border-gray-300" /></td>
+                        <td className="p-3 font-semibold text-[#405189] dark:text-blue-400">{item.menuTitle}</td>
+                        <td className="p-3 text-gray-500">{item.parentTitle || "Root"}</td>
+                        <td className="p-3">
+                          <div className="flex flex-wrap gap-1">
+                            {item.permissions.map((p, idx) => (
+                              <span key={idx} className="bg-[#0ab39c15] text-[#0ab39c] px-2 py-0.5 rounded text-[10px] font-bold uppercase">{p}</span>
+                            ))}
+                          </div>
+                        </td>
+                        <td className="p-3 text-center">
+                          <div className="flex items-center justify-center gap-2">
+                            <button onClick={() => { setMode("edit"); setSelectedItem(item); setOpenModal(true); }} className="bg-[#299cdb] text-white px-3 py-1 rounded text-[11px] shadow-sm hover:brightness-110">Edit</button>
+                            <button onClick={() => { setSelectedItem(item); setOpenDelete(true); }} className="bg-[#f06548] text-white px-3 py-1 rounded text-[11px] shadow-sm hover:brightness-110">Remove</button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile cards */}
+            <div className="block md:hidden divide-y divide-gray-100 dark:divide-gray-700">
+              {data.length === 0 && !loading ? (
+                <div className="p-6 text-center text-gray-400 italic text-sm">No records found</div>
+              ) : (
+                data.map((item) => (
+                  <div key={item.menuId} className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <span className="text-[13px] font-semibold text-[#405189] dark:text-blue-400 truncate">{item.menuTitle}</span>
+                      <span className="text-[11px] text-gray-400 shrink-0">{item.parentTitle || "Root"}</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1 mb-2">
+                      {item.permissions.map((p, idx) => (
+                        <span key={idx} className="bg-[#0ab39c15] text-[#0ab39c] px-2 py-0.5 rounded text-[10px] font-bold uppercase">{p}</span>
+                      ))}
+                    </div>
+                    <div className="flex justify-end gap-1.5">
+                      <button onClick={() => { setMode("edit"); setSelectedItem(item); setOpenModal(true); }} className="bg-[#299cdb] text-white px-2.5 py-1 rounded text-[11px] leading-none">Edit</button>
+                      <button onClick={() => { setSelectedItem(item); setOpenDelete(true); }} className="bg-[#f06548] text-white px-2.5 py-1 rounded text-[11px] leading-none">Remove</button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
 
           {/* Pagination Footer */}

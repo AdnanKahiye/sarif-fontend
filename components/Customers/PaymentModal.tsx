@@ -50,8 +50,8 @@ export default function PaymentModal({ sale, onClose, onSuccess }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50">
-      <div className="bg-white w-full max-w-md rounded-lg p-6">
+    <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50 p-4">
+      <div className="bg-white w-full max-w-md rounded-lg p-5 sm:p-6">
 
         <h3 className="text-lg font-semibold mb-4">
           Add Payment

@@ -65,7 +65,9 @@ function ActionDropdown({
   onCreateAccount: (item: CustomerDto) => void;
 }) {
   const [open, setOpen] = useState(false);
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
   const ref = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -76,6 +78,39 @@ function ActionDropdown({
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
+
+  // Markii window-ka la scroll-gareeyo ama la resize-gareeyo, dami dropdown-ka
+  useEffect(() => {
+    if (!open) return;
+    const close = () => setOpen(false);
+    window.addEventListener("scroll", close, true);
+    window.addEventListener("resize", close);
+    return () => {
+      window.removeEventListener("scroll", close, true);
+      window.removeEventListener("resize", close);
+    };
+  }, [open]);
+
+  const handleToggle = () => {
+    if (!open && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      const dropdownWidth = 176; // w-44 = 11rem = 176px
+      const dropdownHeight = 200;
+      const spaceBelow = window.innerHeight - rect.bottom;
+
+      // Hoos u fur haddii boos uu jiro, haddii kale kor u fur
+      const top =
+        spaceBelow >= dropdownHeight
+          ? rect.bottom + 4
+          : rect.top - dropdownHeight - 4;
+
+      // U toosi midig dhinaca button-ka
+      const left = rect.right - dropdownWidth;
+
+      setPos({ top, left });
+    }
+    setOpen((v) => !v);
+  };
 
   return (
     <div className="flex items-center justify-center gap-2">
@@ -99,15 +134,19 @@ function ActionDropdown({
 
       <div className="relative" ref={ref}>
         <button
-          onClick={() => setOpen((v) => !v)}
+          ref={buttonRef}
+          onClick={handleToggle}
           className="p-1.5 rounded border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           title="More actions"
         >
           <MoreHorizontal size={15} className="text-gray-500 dark:text-gray-400" />
         </button>
 
-        {open && (
-          <div className="absolute right-0 bottom-full mb-1 w-44 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg z-50 py-1 text-[13px]">
+        {open && pos && (
+          <div
+            style={{ position: "fixed", top: pos.top, left: pos.left }}
+            className="w-44 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg z-[9999] py-1 text-[13px]"
+          >
             <button
               onClick={() => { setOpen(false); onDeposit(item); }}
               className="w-full text-left px-4 py-2 flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-[#0ab39c] dark:text-emerald-400 font-medium transition-colors"
@@ -237,20 +276,38 @@ export default function CustomerTable() {
   const startIndex = totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
   const endIndex = Math.min(currentPage * itemsPerPage, totalItems);
 
+  const getPageNumbers = () => {
+    const delta = 2;
+    const range: number[] = [];
+    for (
+      let i = Math.max(2, currentPage - delta);
+      i <= Math.min(totalPages - 1, currentPage + delta);
+      i++
+    ) {
+      range.push(i);
+    }
+    if (currentPage - delta > 2) range.unshift(-1);
+    if (currentPage + delta < totalPages - 1) range.push(-2);
+    if (totalPages > 1) range.unshift(1);
+    if (totalPages > 1) range.push(totalPages);
+    return [...new Set(range)];
+  };
+
   const canAdd = hasPermission("CREATE.USER");
   const canEdit = hasPermission("EDIT.USER");
   const canDelete = hasPermission("DELETE.USER");
   const router = useRouter();
 
   return (
-    <div className="bg-[#f3f3f9] dark:bg-gray-900 min-h-screen p-4 sm:p-6 font-sans text-[#495057]">
+    <div className="bg-[#f3f3f9] dark:bg-gray-900 min-h-screen p-3 sm:p-4 md:p-6 font-sans text-[#495057]">
       <div className="mx-auto max-w-7xl">
 
+        {/* Page header */}
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-[15px] font-bold dark:text-gray-200 uppercase tracking-wide">
             Customer Lists
           </h2>
-          <div className="text-[13px] font-medium">
+          <div className="text-[13px] font-medium hidden sm:block">
             Settings <span className="text-gray-400 mx-1">&gt;</span>{" "}
             <span className="text-gray-400">Customers</span>
           </div>
@@ -258,25 +315,26 @@ export default function CustomerTable() {
 
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-sm overflow-hidden">
 
-          <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="border-b border-gray-100 dark:border-gray-700 p-4">
             <h3 className="text-[16px] font-semibold text-[#495057] dark:text-gray-300">
               Add, Edit &amp; Remove
             </h3>
           </div>
 
-          <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2 w-full md:w-auto">
+          {/* Toolbar */}
+          <div className="p-3 sm:p-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
               {canAdd && (
                 <button
                   onClick={() => { setMode("add"); setSelectedItem(null); setOpenModal(true); }}
-                  className="bg-[#0ab39c] hover:bg-[#099885] text-white px-4 py-2 rounded text-[13px] flex items-center gap-1 transition-all"
+                  className="bg-[#0ab39c] hover:bg-[#099885] text-white px-4 py-2 rounded text-[13px] flex items-center gap-1 transition-all w-full sm:w-auto justify-center"
                 >
                   <span className="text-lg">+</span> Add Customer
                 </button>
               )}
             </div>
 
-            <div className="relative w-full md:w-64">
+            <div className="relative w-full sm:w-64">
               <input
                 type="text"
                 placeholder="Search name or phone..."
@@ -288,109 +346,140 @@ export default function CustomerTable() {
             </div>
           </div>
 
-          {/* ─────────────────────────────────────────────
-              TABLE BODY AREA — with loading overlay
-          ───────────────────────────────────────────── */}
-          <div className="relative min-h-[300px]">
-            {loading && (
-              <div className="absolute inset-0 bg-white/40 dark:bg-gray-800/40 z-10 flex items-center justify-center">
+          {/* ── DESKTOP TABLE (md and above) ── */}
+          <div className="hidden md:block relative">
+            {loading && data.length > 0 && (
+              <div className="absolute inset-0 bg-white/50 dark:bg-gray-800/50 z-10 flex items-center justify-center">
                 <Loader2 className="animate-spin text-[#405189]" size={30} />
               </div>
             )}
-
-            {/* ══════════════════════════════════════════
-                DESKTOP TABLE  (hidden on mobile)
-            ══════════════════════════════════════════ */}
-            <div className="hidden md:block overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead className="bg-[#f3f6f9] dark:bg-gray-700/50 text-[#878a99] text-[13px] font-bold uppercase border-y border-gray-200 dark:border-gray-700">
+            <div className="overflow-x-auto overflow-y-visible">
+            <table className="w-full text-left border-collapse">
+              <thead className="bg-[#f3f6f9] dark:bg-gray-700/50 text-[#878a99] text-[13px] font-bold uppercase border-y border-gray-200 dark:border-gray-700">
+                <tr>
+                  <th className="p-3 w-10 text-center">
+                    <input type="checkbox" className="rounded border-gray-300" />
+                  </th>
+                  <th className="p-3">Full Name</th>
+                  <th className="p-3">Phone</th>
+                  <th className="p-3">Email</th>
+                  <th className="p-3 text-center">Gender</th>
+                  <th className="p-3">Location</th>
+                  <th className="p-3 text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                {loading && data.length === 0 ? (
+                  <SkeletonRows />
+                ) : data.length === 0 ? (
                   <tr>
-                    <th className="p-3 w-10 text-center">
-                      <input type="checkbox" className="rounded border-gray-300" />
-                    </th>
-                    <th className="p-3">Full Name</th>
-                    <th className="p-3">Phone</th>
-                    <th className="p-3">Email</th>
-                    <th className="p-3 text-center">Gender</th>
-                    <th className="p-3">Location</th>
-                    <th className="p-3 text-center">Action</th>
+                    <td colSpan={7} className="p-6 text-center text-gray-400 italic text-sm">
+                      No records found
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                  {data.length === 0 && !loading ? (
-                    <tr>
-                      <td colSpan={7} className="p-6 text-center text-gray-400 italic text-sm">
-                        No records found
+                ) : (
+                  data.map((item) => (
+                    <tr
+                      key={item.id}
+                      className="text-[13px] dark:text-gray-300 hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors"
+                    >
+                      <td className="p-3 text-center">
+                        <input type="checkbox" className="rounded border-gray-300" />
+                      </td>
+                      <td className="p-3 font-semibold text-[#405189] dark:text-blue-400">
+                        {item.fullName}
+                      </td>
+                      <td className="p-3 font-medium text-[#212529] dark:text-gray-200">
+                        {item.phoneNumber}
+                      </td>
+                      <td className="p-3 text-gray-500">{item.email}</td>
+                      <td className="p-3 text-center">
+                        <GenderBadge gender={item.gender} />
+                      </td>
+                      <td className="p-3 text-gray-500 italic">{item.address}</td>
+                      <td className="p-3">
+                        <ActionDropdown
+                          item={item}
+                          canEdit={canEdit}
+                          canDelete={canDelete}
+                          onEdit={(i) => { setMode("edit"); setSelectedItem(i); setOpenModal(true); }}
+                          onDelete={(i) => { setSelectedItem(i); setOpenDelete(true); }}
+                          onLoan={(i) => { setLoanCustomer(i); setOpenLoanModal(true); }}
+                          onDeposit={(i) => { setDepositCustomer(i); setOpenDepositModal(true); }}
+                          onWithdraw={(i) => { setWithdrawCustomer(i); setOpenWithdrawModal(true); }}
+                          onCreateAccount={(i) => { setAccountCustomer(i); setOpenAccountModal(true); }}
+                        />
                       </td>
                     </tr>
-                  ) : (
-                    data.map((item) => (
-                      <tr
-                        key={item.id}
-                        className="text-[13px] dark:text-gray-300 hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors"
-                      >
-                        <td className="p-3 text-center">
-                          <input type="checkbox" className="rounded border-gray-300" />
-                        </td>
-                        <td className="p-3 font-semibold text-[#405189] dark:text-blue-400">
-                          {item.fullName}
-                        </td>
-                        <td className="p-3 font-medium text-[#212529] dark:text-gray-200">
-                          {item.phoneNumber}
-                        </td>
-                        <td className="p-3 text-gray-500">{item.email}</td>
-                        <td className="p-3 text-center">
-                          <span className={`px-2 py-[2px] rounded text-[10px] font-bold uppercase tracking-wider ${item.gender === 0 ? "bg-blue-100 text-blue-600" : "bg-pink-100 text-pink-600"}`}>
-                            {item.gender === 0 ? "MALE" : "FEMALE"}
-                          </span>
-                        </td>
-                        <td className="p-3 text-gray-500 italic">{item.address}</td>
-                        <td className="p-3">
-                          <ActionDropdown
-                            item={item}
-                            canEdit={canEdit}
-                            canDelete={canDelete}
-                            onEdit={(i) => { setMode("edit"); setSelectedItem(i); setOpenModal(true); }}
-                            onDelete={(i) => { setSelectedItem(i); setOpenDelete(true); }}
-                            onLoan={(i) => { setLoanCustomer(i); setOpenLoanModal(true); }}
-                            onDeposit={(i) => { setDepositCustomer(i); setOpenDepositModal(true); }}
-                            onWithdraw={(i) => { setWithdrawCustomer(i); setOpenWithdrawModal(true); }}
-                            onCreateAccount={(i) => { setAccountCustomer(i); setOpenAccountModal(true); }}
-                          />
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                  ))
+                )}
+              </tbody>
+            </table>
             </div>
+          </div>
+          <div className="md:hidden relative">
+            {loading && data.length > 0 && (
+              <div className="absolute inset-0 bg-white/60 dark:bg-gray-800/60 z-10 flex items-center justify-center">
+                <Loader2 className="animate-spin text-[#405189]" size={28} />
+              </div>
+            )}
+            {loading && data.length === 0 ? (
+              <MobileSkeletonCards />
+            ) : data.length === 0 ? (
+              <p className="p-6 text-center text-gray-400 italic text-[13px]">No records found</p>
+            ) : (
+              <div className="divide-y divide-gray-100 dark:divide-gray-700">
+                {data.map((item) => (
+                  <div
+                    key={item.id}
+                    className="p-4 hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors"
+                  >
+                    {/* Card top: name + gender */}
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-[14px] font-semibold text-[#405189] dark:text-blue-400">
+                        {item.fullName}
+                      </span>
+                      <GenderBadge gender={item.gender} />
+                    </div>
 
-            {/* ══════════════════════════════════════════
-                MOBILE CARDS  (shown only on mobile)
-            ══════════════════════════════════════════ */}
-            <div className="block md:hidden divide-y divide-gray-100 dark:divide-gray-700">
-              {data.length === 0 && !loading ? (
-                <div className="p-6 text-center text-gray-400 italic text-sm">
-                  No records found
-                </div>
-              ) : (
-                data.map((item) => (
-                  <div key={item.id} className="p-4 mx-3 my-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
-
-                    {/* Row 1: name + gender badge + actions */}
-                    <div className="flex items-start justify-between gap-2 mb-3">
-                      <div className="flex flex-col gap-2.5">
-                        <span className="text-[15px] font-bold text-[#405189] dark:text-blue-400 leading-tight">
-                          {item.fullName}
-                        </span>
-                        <span className={`inline-block w-fit px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${item.gender === 0
-                            ? "bg-blue-100 text-blue-600"
-                            : "bg-pink-100 text-pink-600"
-                          }`}>
-                          {item.gender === 0 ? "Male" : "Female"}
-                        </span>
+                    {/* Card meta grid */}
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 mb-3">
+                      <div>
+                        <p className="text-[10px] uppercase tracking-wider text-[#878a99] font-medium mb-0.5">
+                          Phone
+                        </p>
+                        <p className="text-[12px] text-[#495057] dark:text-gray-300">
+                          {item.phoneNumber}
+                        </p>
                       </div>
+                      <div>
+                        <p className="text-[10px] uppercase tracking-wider text-[#878a99] font-medium mb-0.5">
+                          Alt Phone
+                        </p>
+                        <p className="text-[12px] text-[#495057] dark:text-gray-300">
+                          {item.altPhoneNumber || "—"}
+                        </p>
+                      </div>
+                      <div className="col-span-2">
+                        <p className="text-[10px] uppercase tracking-wider text-[#878a99] font-medium mb-0.5">
+                          Email
+                        </p>
+                        <p className="text-[12px] text-[#495057] dark:text-gray-300 break-all">
+                          {item.email || "—"}
+                        </p>
+                      </div>
+                      <div className="col-span-2">
+                        <p className="text-[10px] uppercase tracking-wider text-[#878a99] font-medium mb-0.5">
+                          Location
+                        </p>
+                        <p className="text-[12px] text-[#495057] dark:text-gray-300 break-words">
+                          {item.address || "—"}
+                        </p>
+                      </div>
+                    </div>
 
+                    {/* Card actions */}
+                    <div className="pt-2 border-t border-gray-100 dark:border-gray-700">
                       <ActionDropdown
                         item={item}
                         canEdit={canEdit}
@@ -403,70 +492,56 @@ export default function CustomerTable() {
                         onCreateAccount={(i) => { setAccountCustomer(i); setOpenAccountModal(true); }}
                       />
                     </div>
-
-                    {/* Divider */}
-                    <div className="border-t border-dashed border-gray-100 dark:border-gray-700 mb-3" />
-
-                    {/* Row 2: chips */}
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="flex items-center gap-1.5 border border-gray-200 dark:border-gray-600 rounded-full px-3 py-1 text-[11px] text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 font-medium">
-                        📞 {item.phoneNumber}
-                      </span>
-                      {item.email && (
-                        <span className="flex items-center gap-1.5 border border-gray-200 dark:border-gray-600 rounded-full px-3 py-1 text-[11px] text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 font-medium">
-                          ✉️ {item.email}
-                        </span>
-                      )}
-                      {item.address && (
-                        <span className="flex items-center gap-1.5 border border-gray-200 dark:border-gray-600 rounded-full px-3 py-1 text-[11px] text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 font-medium">
-                          📍 {item.address}
-                        </span>
-                      )}
-                    </div>
-
                   </div>
-                ))
-              )}
-            </div>
-
+                ))}
+              </div>
+            )}
           </div>
 
-          <div className="p-4 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800">
-            <span className="text-[13px] text-[#878a99]">
+          {/* Pagination */}
+          <div className="p-3 sm:p-4 flex flex-col sm:flex-row items-center justify-between border-t border-gray-100 dark:border-gray-700 gap-3 bg-white dark:bg-gray-800">
+            <span className="text-[13px] text-[#878a99] order-2 sm:order-1">
               Showing <span className="font-semibold">{startIndex}</span> to{" "}
               <span className="font-semibold">{endIndex}</span> of{" "}
               <span className="font-semibold">{totalItems}</span> Results
             </span>
-            <div className="flex items-center gap-1 flex-wrap justify-center">
+            <div className="flex items-center gap-1 flex-wrap justify-center order-1 sm:order-2">
               <button
                 disabled={currentPage === 1 || loading}
                 onClick={() => setCurrentPage((p) => p - 1)}
-                className="px-3 py-1.5 border border-gray-200 dark:border-gray-700 rounded text-[13px] disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all flex items-center gap-1"
+                className="w-8 h-8 flex items-center justify-center border border-gray-200 dark:border-gray-600 rounded text-[13px] disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                aria-label="Previous page"
               >
-                <ChevronLeft size={14} /> Previous
+                <ChevronLeft size={14} />
               </button>
 
-              <div className="flex items-center gap-1 mx-2">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              {getPageNumbers().map((page, idx) =>
+                page < 0 ? (
+                  <span key={`ellipsis-${idx}`} className="w-8 h-8 flex items-center justify-center text-gray-400 text-[13px]">
+                    …
+                  </span>
+                ) : (
                   <button
                     key={page}
                     onClick={() => setCurrentPage(page)}
-                    className={`px-3 py-1.5 rounded text-[13px] transition-all font-medium ${currentPage === page
-                      ? "bg-[#405189] text-white shadow-sm"
-                      : "border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-600"
-                      }`}
+                    className={`w-8 h-8 flex items-center justify-center rounded text-[13px] ${
+                      currentPage === page
+                        ? "bg-[#405189] text-white"
+                        : "border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
+                    }`}
                   >
                     {page}
                   </button>
-                ))}
-              </div>
+                )
+              )}
 
               <button
                 disabled={currentPage >= totalPages || loading}
                 onClick={() => setCurrentPage((p) => p + 1)}
-                className="px-3 py-1.5 border border-gray-200 dark:border-gray-700 rounded text-[13px] disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all flex items-center gap-1"
+                className="w-8 h-8 flex items-center justify-center border border-gray-200 dark:border-gray-600 rounded text-[13px] disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                aria-label="Next page"
               >
-                Next <ChevronRight size={14} />
+                <ChevronRight size={14} />
               </button>
             </div>
           </div>
@@ -583,6 +658,53 @@ export default function CustomerTable() {
         />
       )}
 
+    </div>
+  );
+}
+
+function GenderBadge({ gender }: { gender: number }) {
+  return (
+    <span
+      className={`px-2 py-[2px] rounded text-[10px] font-bold uppercase tracking-wider ${
+        gender === 0 ? "bg-blue-100 text-blue-600" : "bg-pink-100 text-pink-600"
+      }`}
+    >
+      {gender === 0 ? "MALE" : "FEMALE"}
+    </span>
+  );
+}
+
+function SkeletonRows() {
+  return (
+    <>
+      {[1, 2, 3, 4, 5].map((i) => (
+        <tr key={i} className="animate-pulse">
+          <td colSpan={7} className="p-4 border-b border-gray-100 dark:border-gray-700">
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+          </td>
+        </tr>
+      ))}
+    </>
+  );
+}
+
+function MobileSkeletonCards() {
+  return (
+    <div className="divide-y divide-gray-100 dark:divide-gray-700">
+      {[1, 2, 3, 4].map((i) => (
+        <div key={i} className="p-4 animate-pulse space-y-3">
+          <div className="flex justify-between">
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
+            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

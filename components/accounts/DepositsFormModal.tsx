@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Select from "react-select";
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
-import { X } from "lucide-react";
+import { X, Save } from "lucide-react";
 import { AccountService } from "@/lib/account";
 
 /* ================================
@@ -51,6 +51,7 @@ export default function DepositFormModal({
   const [form, setForm] = useState<CreateDepositRequest>(emptyForm);
   const [accounts, setAccounts] = useState<any[]>([]);
   const [errors, setErrors] = useState<any>({});
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -71,11 +72,24 @@ export default function DepositFormModal({
     });
   }, [open]);
 
+  const handleEsc = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    },
+    [onClose]
+  );
+
+  useEffect(() => {
+    if (open) window.addEventListener("keydown", handleEsc);
+    return () => window.removeEventListener("keydown", handleEsc);
+  }, [open, handleEsc]);
+
   const updateDeposit = (key: keyof CreateDepositRequest["deposit"], value: any) => {
     setForm((prev) => ({
       ...prev,
       deposit: { ...prev.deposit, [key]: value },
     }));
+    if (errors[key]) setErrors((prev: any) => ({ ...prev, [key]: "" }));
   };
 
   const validate = () => {
@@ -93,101 +107,131 @@ export default function DepositFormModal({
     label: a.name,
   }));
 
+  const submit = async () => {
+    if (!validate() || loading) return;
+    setLoading(true);
+    try {
+      await onSubmit(form);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (!open) return null;
 
   return (
-    /* ── Backdrop ── */
-    <div className="fixed inset-0 flex items-center justify-center bg-black/40 p-4 z-50">
-      {/*
-        Mobile  → slides up from bottom, full width, rounded top corners
-        Desktop → centred card, max-w-lg, rounded all corners
-      */}
-      <div className="w-full max-w-lg bg-white rounded-xl p-5 sm:p-6 shadow-lg max-h-[90dvh] overflow-y-auto mx-4">
-
+    <div className="fixed inset-0 z-100 flex items-center justify-center bg-gray-900/40 backdrop-blur-none p-3 sm:p-4">
+      <div
+        className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-950 rounded-xl shadow-xl border border-gray-200 dark:border-gray-800"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* HEADER */}
-        <div className="relative flex items-center justify-center mb-5">
-          <div className="text-center">
-            <h3 className="font-bold text-base sm:text-lg">Deposit</h3>
-            {customerName && (
-              <p className="text-sm text-gray-500 mt-0.5">
-                Customer:{" "}
-                <span className="font-semibold text-[#405189]">{customerName}</span>
-              </p>
-            )}
-          </div>
+        <div className="relative p-4 sm:p-6 border-b border-gray-100 dark:border-gray-800 text-center">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            Deposit
+          </h3>
+          {customerName && (
+            <p className="text-sm text-gray-500 mt-0.5">
+              Customer:{" "}
+              <span className="font-semibold text-[#405189]">{customerName}</span>
+            </p>
+          )}
           <button
             onClick={onClose}
-            className="absolute right-0 p-1.5 hover:bg-gray-100 rounded-full"
+            className="absolute right-4 top-1/2 -translate-y-1/2 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
           >
-            <X className="w-5 h-5 text-gray-500" />
+            <X className="w-4 h-4 text-gray-400" />
           </button>
         </div>
 
-        {/* ACCOUNT */}
-        <div className="mb-4">
-          <Label>Account</Label>
-          <Select
-            options={accountOptions}
-            onChange={(v: any) => updateDeposit("accountId", v?.value)}
-            classNamePrefix="react-select"
-          />
-          {errors.account && (
-            <p className="text-red-500 text-xs mt-1">{errors.account}</p>
-          )}
+        {/* BODY */}
+        <div className="p-4 sm:p-6 space-y-4">
+
+          {/* ACCOUNT */}
+          <Field label="Account" required error={errors.account}>
+            <Select
+              options={accountOptions}
+              onChange={(v: any) => updateDeposit("accountId", v?.value)}
+              classNamePrefix="react-select"
+            />
+          </Field>
+
+          {/* CUSTOMER — hidden */}
+          <input type="hidden" value={form.deposit.customerId} />
+
+          {/* AMOUNT */}
+          <Field label="Amount" required error={errors.amount}>
+            <Input
+              type="number"
+              placeholder="Enter amount"
+              value={form.deposit.amount || ""}
+              onChange={(e: any) =>
+                updateDeposit("amount", Number(e.target.value))
+              }
+            />
+          </Field>
+
+          {/* DESCRIPTION */}
+          <Field label="Description">
+            <Input
+              type="text"
+              placeholder="Optional description"
+              value={form.description}
+              onChange={(e: any) =>
+                setForm({ ...form, description: e.target.value })
+              }
+            />
+          </Field>
+
         </div>
 
-        {/* CUSTOMER — hidden */}
-        <input type="hidden" value={form.deposit.customerId} />
-
-        {/* AMOUNT */}
-        <div className="mb-4">
-          <Label>Amount</Label>
-          <Input
-            type="number"
-            placeholder="Enter amount"
-            value={form.deposit.amount || ""}
-            onChange={(e: any) =>
-              updateDeposit("amount", Number(e.target.value))
-            }
-          />
-          {errors.amount && (
-            <p className="text-red-500 text-xs mt-1">{errors.amount}</p>
-          )}
-        </div>
-
-        {/* DESCRIPTION */}
-        <div className="mb-4">
-          <Label>Description</Label>
-          <Input
-            type="text"
-            placeholder="Optional description"
-            value={form.description}
-            onChange={(e: any) =>
-              setForm({ ...form, description: e.target.value })
-            }
-          />
-        </div>
-
-        {/* ACTIONS */}
-        <div className="flex gap-3 mt-5">
+        {/* FOOTER */}
+        <div className="p-4 bg-gray-50/50 dark:bg-gray-900/50 border-t border-gray-100 dark:border-gray-800 flex flex-col-reverse sm:flex-row justify-end items-stretch sm:items-center gap-2 sm:gap-3 rounded-b-xl">
           <button
             onClick={onClose}
-            className="w-1/2 border border-gray-300 py-2.5 rounded text-[13px]"
+            className="px-4 py-2.5 sm:py-2 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors text-center rounded-lg border border-gray-200 sm:border-0"
           >
             Cancel
           </button>
           <button
-            onClick={() => {
-              if (!validate()) return;
-              onSubmit(form);
-            }}
-            className="w-1/2 bg-[#405189] text-white py-2.5 rounded text-[13px] hover:bg-[#364574]"
+            onClick={submit}
+            disabled={loading}
+            className="flex items-center justify-center gap-2 px-6 py-2.5 sm:py-2 bg-[#405189] hover:bg-[#364574] text-white rounded-lg text-sm font-semibold transition-all disabled:opacity-50"
           >
-            Save
+            {loading ? (
+              <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              <Save className="w-4 h-4" />
+            )}
+            Save Deposit
           </button>
         </div>
-
       </div>
+    </div>
+  );
+}
+
+/* ================================
+   HELPERS
+================================ */
+function Field({
+  label,
+  children,
+  error,
+  required,
+}: {
+  label: string;
+  children: React.ReactNode;
+  error?: string;
+  required?: boolean;
+}) {
+  return (
+    <div className="space-y-1">
+      <Label className="text-[12px] font-bold text-gray-500 uppercase tracking-tight">
+        {label} {required && <span className="text-red-500">*</span>}
+      </Label>
+      {children}
+      {error && <p className="text-[11px] font-medium text-red-500">{error}</p>}
     </div>
   );
 }

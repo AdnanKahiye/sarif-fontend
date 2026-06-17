@@ -179,7 +179,9 @@ export default function CustomerSalesTable() {
 
       {/* CUSTOMER TABLE */}
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="relative">
+          {/* Desktop table */}
+          <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-gray-600 uppercase text-xs tracking-wider">
               <tr>
@@ -225,6 +227,25 @@ export default function CustomerSalesTable() {
               ))}
             </tbody>
           </table>
+          </div>
+
+          {/* Mobile cards */}
+          <div className="block md:hidden divide-y divide-gray-100">
+            {customers.map((c) => (
+              <div
+                key={c.id}
+                onClick={() => setSelectedCustomer(c)}
+                className={`px-4 py-3 cursor-pointer transition-all duration-150 ${selectedCustomer?.id === c.id ? "bg-indigo-50 border-l-4 border-indigo-600" : "hover:bg-gray-50"}`}
+              >
+                <div className="flex items-center justify-between gap-2 mb-1">
+                  <span className="font-medium text-gray-800 text-sm truncate">{c.fullName}</span>
+                  <span className="inline-flex rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-700 shrink-0">{c.type}</span>
+                </div>
+                <div className="text-xs text-gray-600 truncate">{c.email}</div>
+                <div className="text-xs text-gray-500">{c.phoneNumber}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 

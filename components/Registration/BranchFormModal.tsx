@@ -11,6 +11,7 @@ export interface BranchFormData {
   location: string;
   isMain: boolean;
   agencyId: string;
+  
 }
 
 interface Props {

@@ -114,7 +114,7 @@ export default function RolePermissionTable() {
   return (
     <div className="bg-[#f3f3f9] dark:bg-gray-900 min-h-screen p-4 sm:p-6 font-sans">
       <div className="mx-auto max-w-7xl">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
           <h2 className="text-[15px] font-bold text-[#495057] dark:text-gray-200 uppercase tracking-wide">Role Permissions</h2>
           <div className="text-[13px] text-[#495057] font-medium">
             Setup <span className="text-gray-400 mx-1">&gt;</span> <span className="text-gray-400">Role Permissions</span>
@@ -150,13 +150,13 @@ export default function RolePermissionTable() {
             </div>
           </div>
 
-          <div className="overflow-x-auto relative">
+          {/* DESKTOP TABLE */}
+          <div className="hidden md:block overflow-x-auto relative">
             {loading && data.length > 0 && (
               <div className="absolute inset-0 bg-white/50 dark:bg-gray-800/50 z-10 flex items-center justify-center">
                 <Loader2 className="animate-spin text-[#405189]" size={30} />
               </div>
             )}
-
             <table className="w-full text-left border-collapse">
               <thead className="bg-[#f3f6f9] dark:bg-gray-700/50 text-[#878a99] text-[13px] font-bold uppercase border-y border-gray-200 dark:border-gray-700">
                 <tr>
@@ -172,9 +172,7 @@ export default function RolePermissionTable() {
                 {loading && data.length === 0 ? (
                   <SkeletonRows />
                 ) : data.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="p-6 text-center text-gray-500 italic">No records found</td>
-                  </tr>
+                  <tr><td colSpan={6} className="p-6 text-center text-gray-500 italic">No records found</td></tr>
                 ) : (
                   data.map((item) => (
                     <tr key={item.id} className="text-[13px] text-[#212529] dark:text-gray-300 hover:bg-gray-50/50 dark:hover:bg-gray-800/50">
@@ -182,24 +180,13 @@ export default function RolePermissionTable() {
                       <td className="p-3 font-medium text-[#405189]">{item.id}</td>
                       <td className="p-3 font-semibold text-[#495057] dark:text-white">{item.roleName}</td>
                       <td className="p-3">
-                         <span className="bg-[#0ab39c15] text-[#0ab39c] px-2.5 py-1 rounded text-[11px] font-bold uppercase tracking-wider">
-                          {item.permissionName}
-                        </span>
+                        <span className="bg-[#0ab39c15] text-[#0ab39c] px-2.5 py-1 rounded text-[11px] font-bold uppercase tracking-wider">{item.permissionName}</span>
                       </td>
-                      <td className="p-3">
-                         <div className="flex flex-col">
-                            <span className="text-gray-700 dark:text-gray-300 font-medium">{item.userName}</span>
-                         </div>
-                      </td>
+                      <td className="p-3"><span className="text-gray-700 dark:text-gray-300 font-medium">{item.userName}</span></td>
                       <td className="p-3">
                         <div className="flex items-center justify-center gap-2">
                           {canDelete && (
-                            <button 
-                              onClick={() => { setSelectedItem(item); setOpenDelete(true); }} 
-                              className="bg-[#f06548] hover:bg-[#d95337] text-white px-3 py-1 rounded text-[11px] transition-colors"
-                            >
-                              Remove
-                            </button>
+                            <button onClick={() => { setSelectedItem(item); setOpenDelete(true); }} className="bg-[#f06548] hover:bg-[#d95337] text-white px-3 py-1 rounded text-[11px] transition-colors">Remove</button>
                           )}
                         </div>
                       </td>
@@ -210,12 +197,49 @@ export default function RolePermissionTable() {
             </table>
           </div>
 
+          {/* MOBILE CARDS */}
+          <div className="block md:hidden divide-y divide-gray-100 dark:divide-gray-700 relative">
+            {loading && data.length > 0 && (
+              <div className="absolute inset-0 bg-white/50 dark:bg-gray-800/50 z-10 flex items-center justify-center">
+                <Loader2 className="animate-spin text-[#405189]" size={30} />
+              </div>
+            )}
+            {loading && data.length === 0 ? (
+              [1,2,3].map(i => (
+                <div key={i} className="p-4 animate-pulse">
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+                </div>
+              ))
+            ) : data.length === 0 ? (
+              <div className="p-6 text-center text-gray-500 text-[13px] italic">No records found</div>
+            ) : (
+              data.map((item) => (
+                <div key={item.id} className="px-4 py-3 hover:bg-gray-50/50 dark:hover:bg-gray-800/50">
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <span className="text-[13px] font-semibold text-[#495057] dark:text-white">
+                      #{item.id} — {item.roleName}
+                    </span>
+                  </div>
+                  <div className="mb-2">
+                    <span className="bg-[#0ab39c15] text-[#0ab39c] px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-wider">{item.permissionName}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[12px] text-gray-400">{item.userName}</span>
+                    {canDelete && (
+                      <button onClick={() => { setSelectedItem(item); setOpenDelete(true); }} className="bg-[#f06548] text-white px-2.5 py-1 rounded text-[11px] leading-none">Remove</button>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
           {/* Pagination Footer */}
-          <div className="p-4 flex items-center justify-between border-t border-gray-100 dark:border-gray-700">
+          <div className="p-4 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-gray-100 dark:border-gray-700">
             <span className="text-[13px] text-[#878a99]">
               Showing <span className="font-semibold">{startIndex}</span> to <span className="font-semibold">{endIndex}</span> of <span className="font-semibold">{totalItems}</span> Results
             </span>
-            <div className="flex items-center gap-1">
+            <div className="flex flex-wrap items-center gap-1">
               <button 
                 disabled={currentPage === 1 || loading}
                 onClick={() => setCurrentPage(p => p - 1)}

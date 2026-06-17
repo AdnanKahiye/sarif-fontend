@@ -114,7 +114,9 @@ export default function TeamMemberTable() {
         </div>
 
         {/* TABLE */}
-        <div className="overflow-x-auto">
+        <div className="relative">
+          {/* Desktop table */}
+          <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead className="bg-white text-[11px] font-bold text-[#6B7280] uppercase tracking-widest border-b">
               <tr>
@@ -186,6 +188,41 @@ export default function TeamMemberTable() {
               ))}
             </tbody>
           </table>
+          </div>
+
+          {/* Mobile cards */}
+          <div className="block md:hidden divide-y divide-gray-100">
+            {loading ? (
+              <div className="py-10 text-center text-gray-400">Loading directory...</div>
+            ) : filteredMembers.length === 0 ? (
+              <div className="py-10 text-center text-gray-400">No members found.</div>
+            ) : filteredMembers.map((m) => (
+              <div key={m.id} className="px-4 py-4 hover:bg-gray-50/30 transition-colors">
+                <div className="flex items-center gap-3 mb-2">
+                  <img src={m.coverImageUrl || "https://via.placeholder.com/40"} className="w-10 h-10 rounded-full object-cover shadow-sm ring-1 ring-gray-100 shrink-0" alt={m.title} />
+                  <div className="flex-1 min-w-0">
+                    <div className="font-bold text-[#111827] text-sm leading-none mb-1">{m.title}</div>
+                    <div className="text-[11px] text-gray-400 font-medium">{m.name || "User"}</div>
+                  </div>
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold bg-[#FFF7ED] text-[#C2410C] border border-[#FFEDD5] shrink-0">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#FB923C] mr-2"></span>
+                    {m.status || "Active"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    {m.linkedin && <div className="p-1 rounded bg-blue-50 text-blue-600"><Linkedin size={12} /></div>}
+                    {m.facebook && <div className="p-1 rounded bg-indigo-50 text-indigo-600"><Globe size={12} /></div>}
+                    {m.website && <div className="p-1 rounded bg-gray-50 text-gray-600"><Globe size={12} /></div>}
+                  </div>
+                  <div className="flex gap-2 shrink-0">
+                    <button onClick={() => { setMode("edit"); setSelectedMember(m); setOpenModal(true); }} className="p-2.5 bg-[#EEF2FF] text-[#4F46E5] rounded-xl hover:bg-indigo-100 transition-colors shadow-sm"><Edit3 size={16} /></button>
+                    <button onClick={() => { setSelectedMember(m); setOpenDelete(true); }} className="p-2.5 bg-[#FFF1F2] text-[#E11D48] rounded-xl hover:bg-rose-100 transition-colors shadow-sm"><Trash2 size={16} /></button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* PAGINATION */}

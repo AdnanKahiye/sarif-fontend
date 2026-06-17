@@ -154,7 +154,9 @@ export default function ExpensesCategoryTable() {
         </div>
 
         {/* TABLE */}
-        <div className="overflow-x-auto">
+        <div className="relative">
+          {/* Desktop table */}
+          <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-gray-600 uppercase text-xs tracking-wider">
               <tr>
@@ -233,6 +235,30 @@ export default function ExpensesCategoryTable() {
 
             </tbody>
           </table>
+          </div>
+
+          {/* Mobile cards */}
+          <div className="block md:hidden divide-y divide-gray-100">
+            {loading ? (
+              <div className="px-6 py-10 text-center text-gray-500">Loading categories...</div>
+            ) : filteredExpensesCategories.length === 0 ? (
+              <div className="px-6 py-10 text-center text-gray-400">No categories found</div>
+            ) : filteredExpensesCategories.map((s) => (
+              <div key={s.id} className="px-4 py-3 hover:bg-gray-50 transition">
+                <div className="flex items-center justify-between gap-2 mb-1">
+                  <span className="font-medium text-gray-800 text-sm truncate">{s.name}</span>
+                  <span className="text-xs text-gray-500 shrink-0">{new Date(s.createdAt).toISOString().split("T")[0]}</span>
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs text-gray-600 line-clamp-1">{s.description}</span>
+                  <div className="flex gap-1.5 shrink-0">
+                    <button onClick={() => { setMode("edit"); setSelectedExpensesCategory(s); setOpenModal(true); }} className="px-3 py-1 rounded-lg text-indigo-600 hover:bg-indigo-50 transition font-medium text-xs">Edit</button>
+                    <button onClick={() => { setSelectedExpensesCategory(s); setOpenDelete(true); }} className="px-3 py-1 rounded-lg text-red-600 hover:bg-red-50 transition font-medium text-xs">Delete</button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* FOOTER */}

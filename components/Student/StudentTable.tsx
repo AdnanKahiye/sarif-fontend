@@ -176,7 +176,9 @@ export default function StudentTable() {
         </div>
 
         {/* TABLE */}
-        <div className="overflow-x-auto">
+        <div className="relative">
+          {/* Desktop table */}
+          <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-sm text-left border-collapse min-w-[800px]">
             <thead className="bg-gray-50/80 text-gray-500 uppercase text-[10px] font-bold tracking-widest border-b">
               <tr>
@@ -273,6 +275,55 @@ export default function StudentTable() {
               )}
             </tbody>
           </table>
+          </div>
+
+          {/* Mobile cards */}
+          <div className="block md:hidden divide-y divide-gray-100">
+            {loading ? (
+              <div className="py-10 text-center">
+                <Loader2 className="w-8 h-8 animate-spin text-indigo-600 mx-auto" />
+                <p className="text-xs text-gray-400 mt-2">Loading data...</p>
+              </div>
+            ) : filteredStudents.length === 0 ? (
+              <div className="py-10 text-center text-gray-400">No students found.</div>
+            ) : filteredStudents.map((s) => (
+              <div key={s.id} className="px-4 py-3 hover:bg-gray-50/40 transition-colors">
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-sm shrink-0">
+                      {s.userName.charAt(0)}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="font-bold text-gray-900 text-sm capitalize truncate">{s.userName}</div>
+                      <div className="flex items-center gap-1 text-[11px] text-gray-500 truncate">
+                        <Mail size={10} /> {s.email}
+                      </div>
+                    </div>
+                  </div>
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ring-1 ring-inset shrink-0 ${s.isActive ? 'bg-emerald-50 text-emerald-700 ring-emerald-600/20' : 'bg-rose-50 text-rose-700 ring-rose-600/20'}`}>
+                    {s.isActive ? "Active" : "Inactive"}
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-1 mb-2">
+                  {s.courses && s.courses.length > 0 ? (
+                    s.courses.map((c) => (
+                      <span key={c.courseId} className="inline-flex items-center gap-1 px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded text-[10px] font-medium border border-indigo-100">
+                        <BookOpen size={9} /> {c.courseName}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-gray-300 italic text-xs">No Courses</span>
+                  )}
+                </div>
+                <div className="flex justify-end gap-1.5">
+                  <button onClick={() => handleEnrollClick(s)} title="Enroll in Course" className="p-1.5 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-all"><PlusCircle size={14} /></button>
+                  <button onClick={() => handleAssignClick(s)} title="Assign Course Types" className="p-1.5 text-amber-600 bg-amber-50 hover:bg-amber-100 rounded-lg transition-all"><ShieldCheck size={14} /></button>
+                  <button onClick={() => handleEditClick(s)} title="Edit Student" className="p-1.5 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-all"><Edit3 size={14} /></button>
+                  <button onClick={() => handleDeleteClick(s)} title="Remove Student" className="p-1.5 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-lg transition-all"><Trash2 size={14} /></button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* PAGINATION */}

@@ -141,70 +141,87 @@ export default function PermissionTable() {
             </div>
           </div>
 
-          <div className="overflow-x-auto relative">
-            {/* Loading Overlay: Waxay soo baxdaa markii xogtu jirto laakiin la cusboonaysiinayo */}
+          <div className="relative">
             {loading && users.length > 0 && (
               <div className="absolute inset-0 bg-white/50 dark:bg-gray-800/50 z-10 flex items-center justify-center">
                 <Loader2 className="animate-spin text-[#405189]" size={30} />
               </div>
             )}
 
-            <table className="w-full text-left border-collapse">
-              <thead className="bg-[#f3f6f9] dark:bg-gray-700/50 text-[#878a99] text-[13px] font-bold uppercase border-y border-gray-200 dark:border-gray-700">
-                <tr>
-                  <th className="p-3 w-10 text-center"><input type="checkbox" className="rounded border-gray-300" /></th>
-                  <th className="p-3">Name</th>
-                  <th className="p-3">Key Name</th>
-                  <th className="p-3 text-center">Status</th>
-                <th className="p-3 text-center">CreateAt</th>
-                <th className="p-3 text-center">CreateBy</th>
-
-                  <th className="p-3 text-center">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                {loading && users.length === 0 ? (
-                  <SkeletonRows />
-                ) : users.length === 0 ? (
+            {/* Desktop table */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead className="bg-[#f3f6f9] dark:bg-gray-700/50 text-[#878a99] text-[13px] font-bold uppercase border-y border-gray-200 dark:border-gray-700">
                   <tr>
-                    <td colSpan={6} className="p-6 text-center text-gray-500">Xog lama helin</td>
+                    <th className="p-3 w-10 text-center"><input type="checkbox" className="rounded border-gray-300" /></th>
+                    <th className="p-3">Name</th>
+                    <th className="p-3">Key Name</th>
+                    <th className="p-3 text-center">Status</th>
+                    <th className="p-3 text-center">CreateAt</th>
+                    <th className="p-3 text-center">CreateBy</th>
+                    <th className="p-3 text-center">Action</th>
                   </tr>
-                ) : (
-                  users.map((u) => (
-                    <tr key={u.id} className="text-[13px] text-[#212529] dark:text-gray-300 hover:bg-gray-50/50 dark:hover:bg-gray-800/50">
-                      <td className="p-3 text-center"><input type="checkbox" className="rounded border-gray-300" /></td>
-                      <td className="p-3 font-medium">{u.name}</td>
-                      <td className="p-3 text-[#878a99]">{u.keyName}</td>
-         
-
-                      <td className="p-3 text-center">
-
-                        <span className={`px-2 py-[2px] rounded text-[10px] font-bold uppercase tracking-wider ${
-                          u.isActive ? 'bg-[#0ab39c20] text-[#0ab39c]' : 'bg-[#f0654820] text-[#f06548]'
-                        }`}>
-                          {u.isActive ? 'ACTIVE' : 'BLOCK'}
-                        </span>
-                      </td>
-                        <td className="p-3 font-medium">
-                        {new Date(u.createdAt).toLocaleDateString("en-GB")}
+                </thead>
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                  {loading && users.length === 0 ? (
+                    <SkeletonRows />
+                  ) : users.length === 0 ? (
+                    <tr><td colSpan={7} className="p-6 text-center text-gray-500">Xog lama helin</td></tr>
+                  ) : (
+                    users.map((u) => (
+                      <tr key={u.id} className="text-[13px] text-[#212529] dark:text-gray-300 hover:bg-gray-50/50 dark:hover:bg-gray-800/50">
+                        <td className="p-3 text-center"><input type="checkbox" className="rounded border-gray-300" /></td>
+                        <td className="p-3 font-medium">{u.name}</td>
+                        <td className="p-3 text-[#878a99]">{u.keyName}</td>
+                        <td className="p-3 text-center">
+                          <span className={`px-2 py-[2px] rounded text-[10px] font-bold uppercase tracking-wider ${u.isActive ? 'bg-[#0ab39c20] text-[#0ab39c]' : 'bg-[#f0654820] text-[#f06548]'}`}>
+                            {u.isActive ? 'ACTIVE' : 'BLOCK'}
+                          </span>
                         </td>
+                        <td className="p-3 font-medium">{new Date(u.createdAt).toLocaleDateString("en-GB")}</td>
                         <td className="p-3 font-medium">{u.userName}</td>
+                        <td className="p-3">
+                          <div className="flex items-center justify-center gap-2">
+                            {canEdit && (<button onClick={() => { setMode("edit"); setSelectedPermission(u); setOpenModal(true); }} className="bg-[#299cdb] text-white px-3 py-1 rounded text-[11px]">Edit</button>)}
+                            {canDelete && (<button onClick={() => { setSelectedPermission(u); setOpenDelete(true); }} className="bg-[#f06548] text-white px-3 py-1 rounded text-[11px]">Remove</button>)}
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
 
-                      <td className="p-3">
-                        <div className="flex items-center justify-center gap-2">
-                          {canEdit && (
-                            <button onClick={() => { setMode("edit"); setSelectedPermission(u); setOpenModal(true); }} className="bg-[#299cdb] text-white px-3 py-1 rounded text-[11px]">Edit</button>
-                          )}
-                          {canDelete && (
-                            <button onClick={() => { setSelectedPermission(u); setOpenDelete(true); }} className="bg-[#f06548] text-white px-3 py-1 rounded text-[11px]">Remove</button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+            {/* Mobile cards */}
+            <div className="block md:hidden divide-y divide-gray-100 dark:divide-gray-700">
+              {loading && users.length === 0 ? (
+                <div className="p-6 text-center text-gray-400 animate-pulse">Loading...</div>
+              ) : users.length === 0 ? (
+                <div className="p-6 text-center text-gray-500">Xog lama helin</div>
+              ) : (
+                users.map((u) => (
+                  <div key={u.id} className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <span className="text-[13px] font-semibold text-[#212529] dark:text-gray-300">{u.name}</span>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${u.isActive ? 'bg-[#0ab39c20] text-[#0ab39c]' : 'bg-[#f0654820] text-[#f06548]'}`}>
+                        {u.isActive ? 'ACTIVE' : 'BLOCK'}
+                      </span>
+                    </div>
+                    <div className="mb-1">
+                      <span className="text-[11px] text-[#878a99] font-mono">{u.keyName}</span>
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[11px] text-gray-400">{u.userName} · {new Date(u.createdAt).toLocaleDateString("en-GB")}</span>
+                      <div className="flex gap-1.5 shrink-0">
+                        {canEdit && (<button onClick={() => { setMode("edit"); setSelectedPermission(u); setOpenModal(true); }} className="bg-[#299cdb] text-white px-2.5 py-1 rounded text-[11px] leading-none">Edit</button>)}
+                        {canDelete && (<button onClick={() => { setSelectedPermission(u); setOpenDelete(true); }} className="bg-[#f06548] text-white px-2.5 py-1 rounded text-[11px] leading-none">Remove</button>)}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
 
           <div className="p-4 flex items-center justify-between border-t border-gray-100 dark:border-gray-700">

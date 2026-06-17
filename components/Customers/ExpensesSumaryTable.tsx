@@ -92,7 +92,9 @@ export default function ExpensesSummaryTable() {
       </div>
 
       {/* TABLE SECTION */}
-      <div className="overflow-hidden rounded-xl border border-gray-50 dark:border-gray-800">
+      <div className="rounded-xl border border-gray-50 dark:border-gray-800 overflow-hidden">
+        {/* Desktop table */}
+        <div className="hidden md:block overflow-x-auto">
         <table className="w-full border-collapse text-left">
           <thead>
             <tr className="bg-gray-50/50 dark:bg-gray-800/50">
@@ -175,6 +177,33 @@ export default function ExpensesSummaryTable() {
             )}
           </tbody>
         </table>
+        </div>
+
+        {/* Mobile cards */}
+        <div className="block md:hidden divide-y divide-gray-50 dark:divide-gray-800">
+          {loading ? (
+            <div className="py-10 text-center">
+              <div className="flex flex-col items-center gap-2">
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-gray-200 border-t-blue-600"></div>
+                <span className="text-sm text-gray-400 font-medium tracking-wide">Loading data...</span>
+              </div>
+            </div>
+          ) : filteredExpenses.length > 0 ? filteredExpenses.map((c, idx) => (
+            <div key={idx} className="px-4 py-3 hover:bg-slate-50 dark:hover:bg-gray-800/50 cursor-default">
+              <div className="flex items-center justify-between gap-2 mb-1">
+                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">{c.categoryName}</span>
+                <span className="text-base font-bold text-rose-600 dark:text-rose-400 shrink-0 tabular-nums">
+                  ${c.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                </span>
+              </div>
+              <span className="text-[11px] font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded-md dark:bg-gray-800 dark:text-gray-400">
+                {c.lastExpenseAt ? new Date(c.lastExpenseAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "N/A"}
+              </span>
+            </div>
+          )) : (
+            <div className="py-10 text-center text-gray-400 text-sm italic">No expenses found matching your search.</div>
+          )}
+        </div>
       </div>
 
       {/* Filter Modal */}

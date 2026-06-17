@@ -104,7 +104,9 @@ export default function BlogTable() {
         </div>
 
         {/* TABLE */}
-        <div className="overflow-x-auto">
+        <div className="relative">
+          {/* Desktop table */}
+          <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead className="bg-white text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] border-b">
               <tr>
@@ -177,6 +179,45 @@ export default function BlogTable() {
               ))}
             </tbody>
           </table>
+          </div>
+
+          {/* Mobile cards */}
+          <div className="block md:hidden divide-y divide-gray-100">
+            {loading ? (
+              <div className="py-20 text-center font-bold text-gray-300 animate-pulse uppercase text-xs">Fetching Library...</div>
+            ) : filteredBlogs.length === 0 ? (
+              <div className="py-10 text-center text-gray-400 text-sm">No articles found.</div>
+            ) : filteredBlogs.map((b) => (
+              <div key={b.id} className="px-4 py-3 hover:bg-gray-50/50 transition-colors group">
+                <div className="flex items-center justify-between gap-2 mb-1.5">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <img src={b.imageUrl || "/placeholder.png"} className="w-10 h-7 rounded object-cover shadow-sm border border-gray-100 shrink-0" alt="" />
+                    <span className="font-bold text-[#090044] text-sm line-clamp-1 group-hover:text-[#00bf63] transition-colors">{b.title}</span>
+                  </div>
+                  {b.isPublished ? (
+                    <span className="inline-flex items-center text-[10px] font-black uppercase text-[#00bf63] tracking-widest gap-1 shrink-0"><CheckCircle2 size={10} /> Live</span>
+                  ) : (
+                    <span className="inline-flex items-center text-[10px] font-black uppercase text-amber-500 tracking-widest gap-1 shrink-0"><Clock size={10} /> Draft</span>
+                  )}
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-3">
+                    <span className="text-[10px] font-black text-[#090044] bg-gray-100 px-2 py-0.5 rounded-full border border-gray-200 flex items-center gap-1 uppercase">
+                      <Sparkles size={9} className="text-[#00bf63]" /> {b.categoryName}
+                    </span>
+                    <div className="flex items-center gap-2 text-gray-400">
+                      <div className="flex items-center gap-0.5"><Eye size={12}/> <span className="text-xs font-bold">{b.viewsCount || 0}</span></div>
+                      <div className="flex items-center gap-0.5"><FileText size={12}/> <span className="text-xs font-bold">{b.commentsCount || 0}</span></div>
+                    </div>
+                  </div>
+                  <div className="flex gap-1 shrink-0">
+                    <button onClick={() => { setMode("edit"); setSelectedBlog(b); setOpenModal(true); }} className="p-1.5 text-gray-400 hover:text-[#00bf63] hover:bg-[#00bf63]/5 rounded-lg transition-all"><Edit3 size={16} /></button>
+                    <button onClick={() => { setSelectedBlog(b); setOpenDelete(true); }} className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"><Trash2 size={16} /></button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* PAGINATION */}

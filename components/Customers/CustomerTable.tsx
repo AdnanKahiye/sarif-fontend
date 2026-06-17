@@ -157,7 +157,9 @@ export default function CustomerTable() {
         </div>
 
         {/* TABLE */}
-        <div className="overflow-x-auto">
+        <div className="relative">
+          {/* Desktop table */}
+          <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-gray-600 uppercase text-xs tracking-wider">
               <tr>
@@ -249,6 +251,31 @@ export default function CustomerTable() {
 
             </tbody>
           </table>
+          </div>
+
+          {/* Mobile cards */}
+          <div className="block md:hidden divide-y divide-gray-100">
+            {loading ? (
+              <div className="px-6 py-10 text-center text-gray-500">Loading customers...</div>
+            ) : filteredCustomers.length === 0 ? (
+              <div className="px-6 py-10 text-center text-gray-400">No customers found</div>
+            ) : filteredCustomers.map((c) => (
+              <div key={c.id} className="px-4 py-3 hover:bg-gray-50 transition">
+                <div className="flex items-center justify-between gap-2 mb-1">
+                  <span className="font-medium text-gray-800 text-sm truncate">{c.fullName}</span>
+                  <span className="inline-flex rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-700 shrink-0">{c.type}</span>
+                </div>
+                <div className="text-xs text-gray-600 mb-1 truncate">{c.email}</div>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs text-gray-500 truncate">{c.phoneNumber}</span>
+                  <div className="flex gap-1.5 shrink-0">
+                    <button onClick={() => { setMode("edit"); setSelectedCustomer(c); setOpenModal(true); }} className="px-3 py-1 rounded-lg text-indigo-600 hover:bg-indigo-50 transition font-medium text-xs">Edit</button>
+                    <button onClick={() => { setSelectedCustomer(c); setOpenDelete(true); }} className="px-3 py-1 rounded-lg text-red-600 hover:bg-red-50 transition font-medium text-xs">Delete</button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* FOOTER */}

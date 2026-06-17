@@ -148,76 +148,89 @@ export default function RoleTable() {
             </div>
           </div>
 
-          <div className="overflow-x-auto relative">
+          <div className="relative">
             {loading && roles.length > 0 && (
               <div className="absolute inset-0 bg-white/50 dark:bg-gray-800/50 z-10 flex items-center justify-center">
                 <Loader2 className="animate-spin text-[#405189]" size={30} />
               </div>
             )}
 
-            <table className="w-full text-left border-collapse">
-              <thead className="bg-[#f3f6f9] dark:bg-gray-700/50 text-[#878a99] text-[13px] font-bold uppercase border-y border-gray-200 dark:border-gray-700">
-                <tr>
-                  <th className="p-3 w-10 text-center"><input type="checkbox" className="rounded border-gray-300" /></th>
-                  <th className="p-3">Name</th>
-                  <th className="p-3 text-center">description</th>
-                  <th className="p-3 text-center">isActive</th>
-                  <th className="p-3 text-center">CreateAt</th>
-                  <th className="p-3 text-center">CreateBy</th>
-                  <th className="p-3 text-center">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                {loading && roles.length === 0 ? (
-                  <SkeletonRows />
-                ) : roles.length === 0 ? (
+            {/* Desktop table */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead className="bg-[#f3f6f9] dark:bg-gray-700/50 text-[#878a99] text-[13px] font-bold uppercase border-y border-gray-200 dark:border-gray-700">
                   <tr>
-                    <td colSpan={7} className="p-6 text-center text-gray-500">Xog lama helin</td>
+                    <th className="p-3 w-10 text-center"><input type="checkbox" className="rounded border-gray-300" /></th>
+                    <th className="p-3">Name</th>
+                    <th className="p-3 text-center">description</th>
+                    <th className="p-3 text-center">isActive</th>
+                    <th className="p-3 text-center">CreateAt</th>
+                    <th className="p-3 text-center">CreateBy</th>
+                    <th className="p-3 text-center">Action</th>
                   </tr>
-                ) : (
-                  roles.map((r) => (
-                    <tr key={r.id} className="text-[13px] text-[#212529] dark:text-gray-300 hover:bg-gray-50/50 dark:hover:bg-gray-800/50">
-                      <td className="p-3 text-center"><input type="checkbox" className="rounded border-gray-300" /></td>
-                      <td className="p-3 font-medium">{r.name}</td>
-                      <td className="p-3 text-center text-gray-500">{r.description || "---"}</td>
-                      <td className="p-3 text-center">
-                        <span className={`px-2 py-[2px] rounded text-[10px] font-bold uppercase tracking-wider ${
-                          r.isActive ? 'bg-[#0ab39c20] text-[#0ab39c]' : 'bg-[#f0654820] text-[#f06548]'
-                        }`}>
-                          {r.isActive ? 'ACTIVE' : 'BLOCK'}
-                        </span>
-                      </td>
-                      <td className="p-3 text-center text-gray-500">
-                        {new Date(r.createdAt).toLocaleDateString("en-GB")}
-                      </td>
-                      <td className="p-3 text-center text-gray-500">
-                        {r.createdByUserName || "---"}
-                      </td>
-                      <td className="p-3">
-                        <div className="flex items-center justify-center gap-2">
-                          {canEdit && (
-                            <button 
-                              onClick={() => { setMode("edit"); setSelectedRole(r); setOpenModal(true); }} 
-                              className="bg-[#299cdb] text-white px-3 py-1 rounded text-[11px]"
-                            >
-                              Edit
-                            </button>
-                          )}
-                          {canDelete && (
-                            <button 
-                              onClick={() => { setSelectedRole(r); setOpenDelete(true); }} 
-                              className="bg-[#f06548] text-white px-3 py-1 rounded text-[11px]"
-                            >
-                              Remove
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                  {loading && roles.length === 0 ? (
+                    <SkeletonRows />
+                  ) : roles.length === 0 ? (
+                    <tr><td colSpan={7} className="p-6 text-center text-gray-500">Xog lama helin</td></tr>
+                  ) : (
+                    roles.map((r) => (
+                      <tr key={r.id} className="text-[13px] text-[#212529] dark:text-gray-300 hover:bg-gray-50/50 dark:hover:bg-gray-800/50">
+                        <td className="p-3 text-center"><input type="checkbox" className="rounded border-gray-300" /></td>
+                        <td className="p-3 font-medium">{r.name}</td>
+                        <td className="p-3 text-center text-gray-500">{r.description || "---"}</td>
+                        <td className="p-3 text-center">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${r.isActive ? 'bg-[#0ab39c20] text-[#0ab39c]' : 'bg-[#f0654820] text-[#f06548]'}`}>
+                            {r.isActive ? 'ACTIVE' : 'BLOCK'}
+                          </span>
+                        </td>
+                        <td className="p-3 text-center text-gray-500">{new Date(r.createdAt).toLocaleDateString("en-GB")}</td>
+                        <td className="p-3 text-center text-gray-500">{r.createdByUserName || "---"}</td>
+                        <td className="p-3">
+                          <div className="flex items-center justify-center gap-2">
+                            {canEdit && (<button onClick={() => { setMode("edit"); setSelectedRole(r); setOpenModal(true); }} className="bg-[#299cdb] text-white px-3 py-1 rounded text-[11px]">Edit</button>)}
+                            {canDelete && (<button onClick={() => { setSelectedRole(r); setOpenDelete(true); }} className="bg-[#f06548] text-white px-3 py-1 rounded text-[11px]">Remove</button>)}
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile cards */}
+            <div className="block md:hidden divide-y divide-gray-100 dark:divide-gray-700">
+              {loading && roles.length === 0 ? (
+                <div className="p-6 text-center text-gray-400 animate-pulse">Loading...</div>
+              ) : roles.length === 0 ? (
+                <div className="p-6 text-center text-gray-500">Xog lama helin</div>
+              ) : (
+                roles.map((r) => (
+                  <div key={r.id} className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <span className="text-[13px] font-semibold text-[#212529] dark:text-gray-300">{r.name}</span>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${r.isActive ? 'bg-[#0ab39c20] text-[#0ab39c]' : 'bg-[#f0654820] text-[#f06548]'}`}>
+                        {r.isActive ? 'ACTIVE' : 'BLOCK'}
+                      </span>
+                    </div>
+                    {r.description && (
+                      <div className="mb-1">
+                        <span className="text-[11px] text-gray-500">{r.description}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[11px] text-gray-400">{r.createdByUserName || "---"} · {new Date(r.createdAt).toLocaleDateString("en-GB")}</span>
+                      <div className="flex gap-1.5 shrink-0">
+                        {canEdit && (<button onClick={() => { setMode("edit"); setSelectedRole(r); setOpenModal(true); }} className="bg-[#299cdb] text-white px-2.5 py-1 rounded text-[11px] leading-none">Edit</button>)}
+                        {canDelete && (<button onClick={() => { setSelectedRole(r); setOpenDelete(true); }} className="bg-[#f06548] text-white px-2.5 py-1 rounded text-[11px] leading-none">Remove</button>)}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
 
           {/* Pagination */}

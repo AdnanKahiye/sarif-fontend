@@ -153,7 +153,7 @@ export default function PackageTable() {
   return (
     <div className="w-full rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
       {/* Ciwaanka iyo Badhanka Ku Dar */}
-      <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-gray-700">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 px-4 md:px-6 py-4 dark:border-gray-700">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Baakadaha</h2>
         <button
           onClick={() => {
@@ -168,8 +168,8 @@ export default function PackageTable() {
       </div>
 
       {/* Raadin */}
-      <div className="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
-        <div className="relative w-72">
+      <div className="border-b border-gray-200 px-4 md:px-6 py-4 dark:border-gray-700">
+        <div className="relative w-full sm:w-72">
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
             <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -184,9 +184,9 @@ export default function PackageTable() {
         </div>
       </div>
 
-      {/* Shaxda */}
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-full table-auto">
+      {/* Shaxda - Desktop */}
+      <div className="hidden md:block overflow-x-auto w-full">
+        <table className="w-full min-w-160 table-auto">
           <thead>
             <tr className="border-b border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800/50">
               <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
@@ -318,9 +318,41 @@ export default function PackageTable() {
         </table>
       </div>
 
+      {/* Mobile Cards */}
+      <div className="block md:hidden divide-y divide-gray-200 dark:divide-gray-700">
+        {loading && [1,2,3].map(i => (
+          <div key={i} className="p-4 animate-pulse">
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3 mb-2"></div>
+            <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-full"></div>
+          </div>
+        ))}
+        {!loading && filteredPackages.length === 0 && (
+          <div className="p-6 text-center text-sm text-gray-500 dark:text-gray-400">Baakado lama helin</div>
+        )}
+        {!loading && filteredPackages.map((p) => (
+          <div key={p.id} className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+            <div className="flex items-center justify-between gap-2 mb-1">
+              <span className="text-[13px] font-semibold text-gray-900 dark:text-white">{p.name}</span>
+              <span className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium ${getTypeColor(p.type)}`}>{p.type}</span>
+            </div>
+            <div className="flex items-center justify-between gap-2 mb-1">
+              <span className="text-[12px] text-gray-500 dark:text-gray-400 truncate">{p.description}</span>
+              <span className="text-[12px] font-bold text-gray-700 dark:text-gray-300 shrink-0">${p.price.toLocaleString()}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] text-gray-400">{new Date(p.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+              <div className="flex gap-1">
+                <button onClick={() => { setMode("edit"); setSelectedPackage(p); setOpenModal(true); }} className="bg-[#299cdb] text-white px-2.5 py-1 rounded text-[11px] leading-none">Edit</button>
+                <button onClick={() => { setSelectedPackage(p); setOpenDelete(true); }} className="bg-[#f06548] text-white px-2.5 py-1 rounded text-[11px] leading-none">Delete</button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
       {/* Hoosta Shaxda */}
-      <div className="border-t border-gray-200 px-6 py-3 dark:border-gray-700">
-        <div className="flex items-center justify-between">
+      <div className="border-t border-gray-200 px-4 md:px-6 py-3 dark:border-gray-700">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-xs text-gray-500 dark:text-gray-400">
             Tusaya {filteredPackages.length} ee {packages.length} baakadood
           </p>

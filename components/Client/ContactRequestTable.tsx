@@ -147,8 +147,10 @@ export default function ContactRequestTable() {
         </div>
 
         {/* RESPONSIVE TABLE CONTAINER */}
-        <div className="overflow-x-auto flex-grow scrollbar-hide">
-          <table className="w-full text-sm text-left border-collapse min-w-[600px] md:min-w-full">
+        <div className="relative flex-grow">
+          {/* Desktop table */}
+          <div className="hidden md:block overflow-x-auto">
+          <table className="w-full text-sm text-left border-collapse">
             <thead className="bg-gray-50/80 text-gray-500 uppercase text-[10px] md:text-[11px] font-bold tracking-widest border-b">
               <tr>
                 <th className="px-4 md:px-8 py-3">Sender</th>
@@ -233,6 +235,43 @@ export default function ContactRequestTable() {
               )}
             </tbody>
           </table>
+          </div>
+
+          {/* Mobile cards */}
+          <div className="block md:hidden divide-y divide-gray-100">
+            {loading ? (
+              <div className="py-6 text-center">
+                <div className="flex flex-col items-center gap-2">
+                  <div className="w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+                  <span className="font-medium text-xs text-gray-500">Loading...</span>
+                </div>
+              </div>
+            ) : filteredRequests.length === 0 ? (
+              <div className="px-4 py-6 text-center text-gray-400 text-xs">No records found</div>
+            ) : filteredRequests.map((r) => (
+              <div key={r.id} className="px-4 py-3 hover:bg-gray-50/30 transition-colors">
+                <div className="flex items-center justify-between gap-2 mb-1">
+                  <span className="font-semibold text-gray-900 text-xs truncate">{r.fullName}</span>
+                  <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold ring-1 ring-inset shrink-0 ${r.status === 'Pending' ? 'bg-amber-50 text-amber-700 ring-amber-600/20' : 'bg-emerald-50 text-emerald-700 ring-emerald-600/20'}`}>
+                    <span className={`w-1 h-1 rounded-full ${r.status === 'Pending' ? 'bg-amber-500' : 'bg-emerald-500'}`}></span>
+                    {r.status || "New"}
+                  </span>
+                </div>
+                <div className="text-[10px] text-gray-400 mb-1 truncate">{r.email} · {r.phone}</div>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-[10px] text-gray-500 line-clamp-1 flex-1">{r.message}</p>
+                  <div className="flex gap-1.5 shrink-0">
+                    <button onClick={() => { setMode("edit"); setSelectedRequest(r); setOpenModal(true); }} className="p-1.5 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg border border-indigo-100/30 transition-all">
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                    </button>
+                    <button onClick={() => { setSelectedRequest(r); setOpenDelete(true); }} className="p-1.5 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg border border-red-100/30 transition-all">
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* PAGINATION FOOTER */}

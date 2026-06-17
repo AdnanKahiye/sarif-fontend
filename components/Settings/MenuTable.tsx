@@ -153,62 +153,85 @@ export default function MenuTable() {
             </div>
           </div>
 
-          <div className="overflow-x-auto relative">
+          <div className="relative">
             {loading && menus.length > 0 && (
               <div className="absolute inset-0 bg-white/50 dark:bg-gray-800/50 z-10 flex items-center justify-center">
                 <Loader2 className="animate-spin text-[#405189]" size={30} />
               </div>
             )}
 
-            <table className="w-full text-left border-collapse">
-              <thead className="bg-[#f3f6f9] dark:bg-gray-700/50 text-[#878a99] text-[13px] font-bold uppercase border-y border-gray-200 dark:border-gray-700">
-                <tr>
-                  <th className="p-3 w-10 text-center"><input type="checkbox" className="rounded border-gray-300" /></th>
-                  <th className="p-3">#</th>
-                   <th className="p-3">Title</th>
-                  <th className="p-3">Module</th>
-                  <th className="p-3">URL</th>
-                  <th className="p-3 text-center">Parent ID</th>
-                  <th className="p-3 text-center">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                {loading && menus.length === 0 ? (
-                  <SkeletonRows />
-                ) : menus.length === 0 ? (
+            {/* Desktop table */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead className="bg-[#f3f6f9] dark:bg-gray-700/50 text-[#878a99] text-[13px] font-bold uppercase border-y border-gray-200 dark:border-gray-700">
                   <tr>
-                    <td colSpan={6} className="p-6 text-center text-gray-500">Xog lama helin</td>
+                    <th className="p-3 w-10 text-center"><input type="checkbox" className="rounded border-gray-300" /></th>
+                    <th className="p-3">#</th>
+                    <th className="p-3">Title</th>
+                    <th className="p-3">Module</th>
+                    <th className="p-3">URL</th>
+                    <th className="p-3 text-center">Parent ID</th>
+                    <th className="p-3 text-center">Action</th>
                   </tr>
-                ) : (
-                  menus.map((m) => (
-                    <tr key={m.id} className="text-[13px] text-[#212529] dark:text-gray-300 hover:bg-gray-50/50 dark:hover:bg-gray-800/50">
-                      <td className="p-3 text-center"><input type="checkbox" className="rounded border-gray-300" /></td>
-                      <td className="p-3 font-medium">{m.id}</td>
-                      <td className="p-3 font-medium">{m.title}</td>
-                      <td className="p-3">
-                        <span className="bg-[#40518910] text-[#405189] px-2 py-[2px] rounded text-[11px] font-medium">
-                          {m.moduleName}
-                        </span>
-                      </td>
-                      <td className="p-3 text-gray-500">{m.href}</td>
-<td className="p-3 text-center font-bold text-gray-600">
-  {m.parentId && m.parentId !== 0 ? m.parentId : "No Parent"}
-</td>
-                      <td className="p-3">
-                        <div className="flex items-center justify-center gap-2">
-                          {canEdit && (
-                            <button onClick={() => { setMode("edit"); setSelectedMenu(m); setOpenModal(true); }} className="bg-[#299cdb] text-white px-3 py-1 rounded text-[11px]">Edit</button>
-                          )}
-                          {canDelete && (
-                            <button onClick={() => { setSelectedMenu(m); setOpenDelete(true); }} className="bg-[#f06548] text-white px-3 py-1 rounded text-[11px]">Remove</button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                  {loading && menus.length === 0 ? (
+                    <SkeletonRows />
+                  ) : menus.length === 0 ? (
+                    <tr><td colSpan={7} className="p-6 text-center text-gray-500">Xog lama helin</td></tr>
+                  ) : (
+                    menus.map((m) => (
+                      <tr key={m.id} className="text-[13px] text-[#212529] dark:text-gray-300 hover:bg-gray-50/50 dark:hover:bg-gray-800/50">
+                        <td className="p-3 text-center"><input type="checkbox" className="rounded border-gray-300" /></td>
+                        <td className="p-3 font-medium">{m.id}</td>
+                        <td className="p-3 font-medium">{m.title}</td>
+                        <td className="p-3">
+                          <span className="bg-[#40518910] text-[#405189] px-2 py-0.5 rounded text-[11px] font-medium">{m.moduleName}</span>
+                        </td>
+                        <td className="p-3 text-gray-500">{m.href}</td>
+                        <td className="p-3 text-center font-bold text-gray-600">
+                          {m.parentId && m.parentId !== 0 ? m.parentId : "No Parent"}
+                        </td>
+                        <td className="p-3">
+                          <div className="flex items-center justify-center gap-2">
+                            {canEdit && (<button onClick={() => { setMode("edit"); setSelectedMenu(m); setOpenModal(true); }} className="bg-[#299cdb] text-white px-3 py-1 rounded text-[11px]">Edit</button>)}
+                            {canDelete && (<button onClick={() => { setSelectedMenu(m); setOpenDelete(true); }} className="bg-[#f06548] text-white px-3 py-1 rounded text-[11px]">Remove</button>)}
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile cards */}
+            <div className="block md:hidden divide-y divide-gray-100 dark:divide-gray-700">
+              {loading && menus.length === 0 ? (
+                <div className="p-6 text-center text-gray-400 animate-pulse">Loading...</div>
+              ) : menus.length === 0 ? (
+                <div className="p-6 text-center text-gray-500">Xog lama helin</div>
+              ) : (
+                menus.map((m) => (
+                  <div key={m.id} className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <span className="text-[13px] font-semibold text-[#212529] dark:text-gray-300">{m.title}</span>
+                      <span className="bg-[#40518910] text-[#405189] px-2 py-0.5 rounded text-[11px] font-medium shrink-0">{m.moduleName}</span>
+                    </div>
+                    <div className="mb-1">
+                      <span className="text-[11px] text-gray-400 font-mono truncate block">{m.href}</span>
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[11px] text-gray-400">Parent: {m.parentId && m.parentId !== 0 ? m.parentId : "None"}</span>
+                      <div className="flex gap-1.5 shrink-0">
+                        {canEdit && (<button onClick={() => { setMode("edit"); setSelectedMenu(m); setOpenModal(true); }} className="bg-[#299cdb] text-white px-2.5 py-1 rounded text-[11px] leading-none">Edit</button>)}
+                        {canDelete && (<button onClick={() => { setSelectedMenu(m); setOpenDelete(true); }} className="bg-[#f06548] text-white px-2.5 py-1 rounded text-[11px] leading-none">Remove</button>)}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
 
           <div className="p-4 flex items-center justify-between border-t border-gray-100 dark:border-gray-700">

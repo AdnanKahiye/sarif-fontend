@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { CustomerService } from "@/lib/customers";
 import toast from "react-hot-toast";
+import { Loader2 } from "lucide-react";
 import SaleDetailModal from "./SaleDetailModal";
 import SalesFilterModal from "../common/SalesFilterModal";
 
@@ -73,12 +74,12 @@ export default function SalesTable() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
+    <div className="min-h-screen bg-gray-100 p-4 md:p-6">
 
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
 
         {/* HEADER */}
-        <div className="flex items-center justify-between px-6 py-5 border-b bg-white">
+        <div className="flex flex-wrap items-center justify-between gap-3 px-4 md:px-6 py-4 md:py-5 border-b bg-white">
           <div>
             <h2 className="text-xl font-semibold text-gray-800">
               Sales List
@@ -90,15 +91,20 @@ export default function SalesTable() {
 
           <button
             onClick={() => setFilterOpen(true)}
-            className="px-5 py-2 bg-indigo-600 text-white rounded-xl 
+            className="px-5 py-2 bg-indigo-600 text-white rounded-xl
                        hover:bg-indigo-700 transition shadow-sm"
           >
             Filter
           </button>
         </div>
 
-        {/* TABLE */}
-        <div className="w-full overflow-x-auto">
+        {/* DESKTOP TABLE */}
+        <div className="hidden md:block overflow-x-auto relative">
+          {loading && sales.length > 0 && (
+            <div className="absolute inset-0 bg-white/50 z-10 flex items-center justify-center">
+              <Loader2 className="animate-spin text-indigo-600" size={30} />
+            </div>
+          )}
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-gray-600 uppercase text-xs tracking-wider">
               <tr>
@@ -112,86 +118,79 @@ export default function SalesTable() {
                 <th className="px-6 py-4 text-center">Action</th>
               </tr>
             </thead>
-
             <tbody className="divide-y">
-
-              {loading && (
-                <tr>
-                  <td colSpan={8} className="px-6 py-10 text-center text-gray-500">
-                    Loading sales...
-                  </td>
-                </tr>
+              {loading && sales.length === 0 && (
+                <tr><td colSpan={8} className="px-6 py-10 text-center text-gray-500">Loading sales...</td></tr>
               )}
-
               {!loading && sales.length === 0 && (
-                <tr>
-                  <td colSpan={8} className="px-6 py-10 text-center text-gray-400">
-                    No sales found
-                  </td>
-                </tr>
+                <tr><td colSpan={8} className="px-6 py-10 text-center text-gray-400">No sales found</td></tr>
               )}
-
-              {!loading && sales.map((sale) => (
-                <tr
-                  key={sale.saleId}
-                  className="hover:bg-gray-50 transition"
-                >
-                  <td className="px-6 py-4 font-medium text-gray-800">
-                    {sale.customerName}
-                  </td>
-
-                  <td className="px-6 py-4 text-gray-600">
-                    {sale.subTotal}
-                  </td>
-
-                  <td className="px-6 py-4 text-gray-600">
-                    {sale.discount}
-                  </td>
-
-                  <td className="px-6 py-4 font-semibold text-gray-800">
-                    {sale.totalAmount}
-                  </td>
-
-                  <td className="px-6 py-4 text-green-600 font-medium">
-                    {sale.paidAmount}
-                  </td>
-
-                  <td className="px-6 py-4 text-red-500 font-medium">
-                    {sale.balance}
-                  </td>
-
+              {sales.map((sale) => (
+                <tr key={sale.saleId} className="hover:bg-gray-50 transition">
+                  <td className="px-6 py-4 font-medium text-gray-800">{sale.customerName}</td>
+                  <td className="px-6 py-4 text-gray-600">{sale.subTotal}</td>
+                  <td className="px-6 py-4 text-gray-600">{sale.discount}</td>
+                  <td className="px-6 py-4 font-semibold text-gray-800">{sale.totalAmount}</td>
+                  <td className="px-6 py-4 text-green-600 font-medium">{sale.paidAmount}</td>
+                  <td className="px-6 py-4 text-red-500 font-medium">{sale.balance}</td>
                   <td className="px-6 py-4">
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        sale.status === "Completed"
-                          ? "bg-green-100 text-green-700"
-                          : sale.status === "Partial"
-                          ? "bg-yellow-100 text-yellow-700"
-                          : "bg-red-100 text-red-700"
-                      }`}
-                    >
-                      {sale.status}
-                    </span>
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      sale.status === "Completed" ? "bg-green-100 text-green-700"
+                      : sale.status === "Partial" ? "bg-yellow-100 text-yellow-700"
+                      : "bg-red-100 text-red-700"
+                    }`}>{sale.status}</span>
                   </td>
-
                   <td className="px-6 py-4 text-center">
-                    <button
-                      onClick={() => setSelectedSale(sale)}
-                      className="px-4 py-1.5 rounded-lg text-indigo-600 
-                                 hover:bg-indigo-50 transition font-medium"
-                    >
-                      View
-                    </button>
+                    <button onClick={() => setSelectedSale(sale)} className="px-4 py-1.5 rounded-lg text-indigo-600 hover:bg-indigo-50 transition font-medium">View</button>
                   </td>
                 </tr>
               ))}
-
             </tbody>
           </table>
         </div>
 
+        {/* MOBILE CARDS */}
+        <div className="block md:hidden divide-y divide-gray-100 relative">
+          {loading && sales.length > 0 && (
+            <div className="absolute inset-0 bg-white/50 z-10 flex items-center justify-center">
+              <Loader2 className="animate-spin text-indigo-600" size={30} />
+            </div>
+          )}
+          {loading && sales.length === 0 && (
+            [1,2,3].map(i => (
+              <div key={i} className="p-4 animate-pulse">
+                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                <div className="h-3 bg-gray-100 rounded w-1/2"></div>
+              </div>
+            ))
+          )}
+          {!loading && sales.length === 0 && (
+            <div className="p-6 text-center text-gray-400 text-sm">No sales found</div>
+          )}
+          {sales.map((sale) => (
+            <div key={sale.saleId} className="px-4 py-3 hover:bg-gray-50">
+              <div className="flex items-center justify-between gap-2 mb-1">
+                <span className="text-[13px] font-semibold text-gray-800 truncate">{sale.customerName}</span>
+                <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium whitespace-nowrap ${
+                  sale.status === "Completed" ? "bg-green-100 text-green-700"
+                  : sale.status === "Partial" ? "bg-yellow-100 text-yellow-700"
+                  : "bg-red-100 text-red-700"
+                }`}>{sale.status}</span>
+              </div>
+              <div className="flex items-center justify-between gap-2 mb-2 text-[12px] text-gray-500">
+                <span>Total: <strong className="text-gray-800">{sale.totalAmount}</strong></span>
+                <span>Paid: <strong className="text-green-600">{sale.paidAmount}</strong></span>
+                <span>Balance: <strong className="text-red-500">{sale.balance}</strong></span>
+              </div>
+              <div className="flex justify-end">
+                <button onClick={() => setSelectedSale(sale)} className="bg-indigo-600 text-white px-3 py-1 rounded-lg text-[11px] font-medium">View</button>
+              </div>
+            </div>
+          ))}
+        </div>
+
         {/* PAGINATION */}
-        <div className="flex items-center justify-between px-6 py-5 border-t bg-gray-50">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 md:px-6 py-4 md:py-5 border-t bg-gray-50">
 
           <span className="text-sm text-gray-500">
             Page {pageNumber} of {totalPages}

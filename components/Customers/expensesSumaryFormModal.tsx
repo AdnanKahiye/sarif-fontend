@@ -23,9 +23,9 @@ export default function ExpensSummaryFilterModal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div
-        className="w-full max-w-md rounded-xl bg-white dark:bg-gray-900 p-6 shadow-xl"
+        className="w-full max-w-md rounded-xl bg-white dark:bg-gray-900 p-5 sm:p-6 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <h3 className="mb-4 text-lg font-semibold text-center text-gray-900 dark:text-white">

@@ -8,6 +8,11 @@ const api = axios.create({
   },
 });
 
+
+
+
+
+
 console.log("API URL:", process.env.NEXT_PUBLIC_API_URL);
 
 api.interceptors.response.use(

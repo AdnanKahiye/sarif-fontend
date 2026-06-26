@@ -295,8 +295,4 @@ function DropdownPanel({
       </div>
     </>
   );
-
-
-
-  
 }

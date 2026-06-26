@@ -602,14 +602,14 @@ export default function CustomerTable() {
           onClose={() => { setOpenDepositModal(false); setDepositCustomer(null); }}
           onSubmit={async (form) => {
             try {
-              await AccountService.createLoan(form);
-              toast.success("Loan created successfully");
-              setOpenLoanModal(false);
-              setLoanCustomer(null);
+              await AccountService.createDeposit(form);
+              toast.success("Deposit created successfully");
+              setOpenDepositModal(false);
+              setDepositCustomer(null);
               loadData(currentPage, search);
               router.push("/dashboard/deposits");
             } catch (error: any) {
-              toast.error(error.response?.data?.message || "Loan failed");
+              toast.error(error.response?.data?.message || "Deposit failed");
             }
           }}
         />
@@ -623,14 +623,14 @@ export default function CustomerTable() {
           onClose={() => { setOpenWithdrawModal(false); setWithdrawCustomer(null); }}
           onSubmit={async (form) => {
             try {
-              await AccountService.createLoan(form);
-              toast.success("Loan created successfully");
-              setOpenLoanModal(false);
-              setLoanCustomer(null);
+              await AccountService.createWithdraw(form);
+              toast.success("Withdrawal created successfully");
+              setOpenWithdrawModal(false);
+              setWithdrawCustomer(null);
               loadData(currentPage, search);
               router.push("/dashboard/withdrawals");
             } catch (error: any) {
-              toast.error(error.response?.data?.message || "Loan failed");
+              toast.error(error.response?.data?.message || "Withdrawal failed");
             }
           }}
         />
@@ -645,14 +645,14 @@ export default function CustomerTable() {
           onClose={() => { setOpenAccountModal(false); setAccountCustomer(null); }}
           onSubmit={async (form) => {
             try {
-              await AccountService.createLoan(form);
-              toast.success("Loan created successfully");
-              setOpenLoanModal(false);
-              setLoanCustomer(null);
+              await AccountService.createAccount(form);
+              toast.success("Account created successfully");
+              setOpenAccountModal(false);
+              setAccountCustomer(null);
               loadData(currentPage, search);
               router.push("/dashboard/accounts");
             } catch (error: any) {
-              toast.error(error.response?.data?.message || "Loan failed");
+              toast.error(error.response?.data?.message || "Account failed");
             }
           }}
         />

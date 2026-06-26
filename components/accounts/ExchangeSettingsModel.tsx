@@ -11,7 +11,7 @@ import { AccountService } from "@/lib/account";
 export interface ExchangeFormData {
     id: number;
     currencyId: number;
-    feeRate: number;
+    // feeRate: number;
     profitRate: number;
 }
 
@@ -26,7 +26,7 @@ interface Props {
 const emptyForm: ExchangeFormData = {
     id: 0,
     currencyId: 0,
-    feeRate: 0,
+    // feeRate: 0,
     profitRate: 0,
 };
 
@@ -69,7 +69,7 @@ export default function ExchangeFormModal({ open, mode, initialData, onClose, on
                     ...initialData,
                     id: initialData.id ?? 0,
                     currencyId: initialData.currencyId ?? 0,
-                    feeRate: initialData.feeRate ?? 0,
+                    // feeRate: initialData.feeRate ?? 0,
                     profitRate: initialData.profitRate ?? 0,
                 });
             } else {
@@ -96,7 +96,7 @@ export default function ExchangeFormModal({ open, mode, initialData, onClose, on
     const validate = () => {
         const e: typeof errors = {};
         if (!form.currencyId) e.currencyId = "Currency is required";
-        if (!form.feeRate) e.feeRate = "Fee Rate is required";
+        // if (!form.feeRate) e.feeRate = "Fee Rate is required";
         if (!form.profitRate) e.profitRate = "Profit Rate is required";
 
         setErrors(e);
@@ -162,14 +162,14 @@ export default function ExchangeFormModal({ open, mode, initialData, onClose, on
                             </select>
                         </Field>
 
-                        <Field label="Fee Rate (%)" required error={errors.feeRate}>
+                        {/* <Field label="Fee Rate (%)" required error={errors.feeRate}>
                             <Input
                                 type="number"
                                 value={form.feeRate}
                                 onChange={(e) => update("feeRate", (e.target.value))}
                                 placeholder="Enter fee rate"
                             />
-                        </Field>
+                        </Field> */}
 
                         <Field label="Profit Rate (%)" required error={errors.profitRate}>
                             <Input

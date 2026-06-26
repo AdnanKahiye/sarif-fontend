@@ -89,7 +89,7 @@ export default function ExchangeTable() {
       if (mode === "add") {
         await AccountService.createExchangeSetting({
           currencyId: data.currencyId,
-          feeRate: Number(data.feeRate),
+          // feeRate: Number(data.feeRate),
           profitRate: Number(data.profitRate),
           isActive: true,
         });
@@ -98,7 +98,7 @@ export default function ExchangeTable() {
         if (!selectedExchange) return;
         await AccountService.updateExchangeSetting(selectedExchange.id, {
           id: selectedExchange.id,
-          feeRate: Number(data.feeRate),
+          // feeRate: Number(data.feeRate),
           profitRate: Number(data.profitRate),
           isActive: selectedExchange.isActive ?? true,
         });
@@ -176,7 +176,7 @@ export default function ExchangeTable() {
                   <th className="p-3 w-10 text-center"><input type="checkbox" className="rounded border-gray-300" /></th>
                   <th className="p-3">ID</th>
                   <th className="p-3">Currency</th>
-                  <th className="p-3">Fee Rate</th>
+                  {/* <th className="p-3">Fee Rate</th> */}
                   <th className="p-3">Profit Rate</th>
                   <th className="p-3 text-center">Action</th>
                 </tr>
@@ -191,7 +191,7 @@ export default function ExchangeTable() {
                     <td className="p-3 text-center"><input type="checkbox" /></td>
                     <td className="p-3 font-medium">{exchange.id}</td>
                     <td className="p-3 text-[#878a99]">{currencyMap[exchange.currencyId] || "Unknown"}</td>
-                    <td className="p-3">{exchange.feeRate}%</td>
+                    {/* <td className="p-3">{exchange.feeRate}%</td> */}
                     <td className="p-3">{exchange.profitRate}%</td>
                     <td className="p-3">
                       <div className="flex items-center justify-center gap-2">
@@ -289,7 +289,7 @@ export default function ExchangeTable() {
         initialData={selectedExchange ? {
           id: selectedExchange.id,
           currencyId: selectedExchange.currencyId,
-          feeRate: selectedExchange.feeRate,
+          // feeRate: selectedExchange.feeRate,
           profitRate: selectedExchange.profitRate,
         } : undefined}
         onClose={() => setOpenModal(false)}

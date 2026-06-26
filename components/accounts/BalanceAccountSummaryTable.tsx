@@ -128,8 +128,8 @@ export default function BalanceSummaryTable() {
                   <tr>
                     <th className="p-3">Account Name</th>
                     <th className="p-3">Currency</th>
-                    <th className="p-3">Total Debit</th>
-                    <th className="p-3">Total Credit</th>
+                    <th className="p-3">Total Out</th> 
+                    <th className="p-3">Total In</th>
                     <th className="p-3">Balance</th>
                   </tr>
                 </thead>

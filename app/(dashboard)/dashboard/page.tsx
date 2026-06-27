@@ -275,9 +275,9 @@ export default function DashboardContent() {
       {/* METRIC CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
         <MetricCard
-          title="Total Profit"
+          title="Current Cash Balance (USD)"
           value={dashboardLoading ? "Loading..." : formatBaseAmount(dashboard?.currentBalanceBase || 0)}
-          sub="Overall profit in base currency"
+          sub="Overall Cash Balance"
           icon={<Wallet size={15} />}
           iconBg="bg-blue-100"
           iconColor="text-blue-600"

@@ -91,7 +91,7 @@ export default function RepaymentFormModal({
     if (!form.repayment.loanId)                          e.loan        = "Loan ID required";
     if (!form.repayment.amount || form.repayment.amount <= 0) e.amount = "Amount must be greater than 0";
     if (!form.repayment.cashAccountId)                   e.cash        = "Cash account required";
-    if (!form.description)                               e.description = "Description required";
+    // if (!form.description)                               e.description = "Description required";
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -160,7 +160,7 @@ export default function RepaymentFormModal({
         </div>
 
         {/* DESCRIPTION */}
-        <div className="mb-4">
+        {/* <div className="mb-4">
           <Label>Description</Label>
           <Input
             value={form.description}

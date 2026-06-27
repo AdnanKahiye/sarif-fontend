@@ -50,24 +50,35 @@ export default function WithdrawTable() {
 
   const getCurrencySymbol = (currencyId?: number) => {
     if (!currencyId) return "";
+
     switch (currencyId) {
-      case 1: return "$";
-      case 2: return "Sh";
-      case 3: return "KSh";
-      default: return "";
+      case 1:
+        return "$";
+        
+      case 6:
+        return "KSh";
+      default:
+        return "";
     }
   };
 
   const formatMoney = (amount?: number, currencyId?: number) => {
     const symbol = getCurrencySymbol(currencyId);
-    const value = new Intl.NumberFormat("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(amount || 0);
+
     return (
       <span className="flex items-center gap-1">
-        <span className="text-gray-400 text-xs font-semibold">{symbol}</span>
-        <span className="text-gray-900 font-bold">{value}</span>
+        {/* Symbol */}
+        <span className="text-gray-400 text-xs font-normal">
+          {symbol}
+        </span>
+
+        {/* Amount */}
+        <span className="font-bold text-[#212529]">
+          {new Intl.NumberFormat("en-US", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          }).format(amount || 0)}
+        </span>
       </span>
     );
   };
@@ -175,7 +186,7 @@ export default function WithdrawTable() {
                     <tr key={item.id} className="text-[13px] hover:bg-gray-50">
                       <td className="p-3">{item.customerName}</td>
                       <td className="p-3">{item.accountName}</td>
-                      <td className="p-3">{formatMoney(item.amount, item.currencyId)}</td>
+                      <td>{formatMoney(item.amount, item.currencyId)}</td>
                       <td className="p-3 text-[#0ab39c] font-bold">{item.currencyCode}</td>
                       <td className="p-3">
                         {(() => {

@@ -81,8 +81,11 @@ type ExchangeRate = {
 
 type ExchangeRateApiResponse = {
   data: {
-    items: ExchangeRate[];
-    totalCount: number;
+    data: ExchangeRate[];
+    page: number;
+    pageSize: number;
+    totalRecords: number;
+    totalPages: number;
   };
   success: boolean;
   message: string;
@@ -289,7 +292,7 @@ export default function DashboardContent() {
           icon={<TrendingUp size={15} />}
           iconBg="bg-green-100"
           iconColor="text-green-600"
-          
+
         />
         <MetricCard
           title="Today Transactions"
@@ -461,17 +464,17 @@ export default function DashboardContent() {
 ========================= */
 
 function CurrencyConverter() {
-  const [amount, setAmount]               = useState<string>("100");
-  const [from, setFrom]                   = useState<string>("");
-  const [to, setTo]                       = useState<string>("");
-  const [rates, setRates]                 = useState<RateMap>({});
-  const [currencies, setCurrencies]       = useState<string[]>([]);
-  const [ratesLoading, setRatesLoading]   = useState(true);
-  const [ratesError, setRatesError]       = useState("");
-  const [convertedResult, setConvertedResult]     = useState<number | null>(null);
+  const [amount, setAmount] = useState<string>("100");
+  const [from, setFrom] = useState<string>("");
+  const [to, setTo] = useState<string>("");
+  const [rates, setRates] = useState<RateMap>({});
+  const [currencies, setCurrencies] = useState<string[]>([]);
+  const [ratesLoading, setRatesLoading] = useState(true);
+  const [ratesError, setRatesError] = useState("");
+  const [convertedResult, setConvertedResult] = useState<number | null>(null);
   const [convertedUnitRate, setConvertedUnitRate] = useState<number | null>(null);
-  const [convertedFrom, setConvertedFrom]         = useState<string>("");
-  const [convertedTo, setConvertedTo]             = useState<string>("");
+  const [convertedFrom, setConvertedFrom] = useState<string>("");
+  const [convertedTo, setConvertedTo] = useState<string>("");
 
   useEffect(() => {
     const fetchRates = async () => {
@@ -487,27 +490,29 @@ function CurrencyConverter() {
           return;
         }
 
-        const items: ExchangeRate[] = result.data?.items || [];
+        const items: ExchangeRate[] = result.data?.data || [];
 
         // Build RateMap — USD is always base = 1, API items are other currencies
-        const map: RateMap = { USD: 1 };
+        const map: RateMap = {};
         items.forEach((item) => {
-          if (item.currencyCode && item.currencyCode !== "USD" && item.rate > 0) {
+          if (item.currencyCode && item.rate > 0) {
             map[item.currencyCode] = item.rate;
           }
         });
         setRates(map);
 
         // Build unique currency list — USD first, then API currencies
-        const apiCodes = items
-          .map((i) => i.currencyCode)
-          .filter((code) => code && code !== "USD");
-        const unique = ["USD", ...Array.from(new Set(apiCodes))];
-        setCurrencies(unique);
+        const unique = Array.from(
+          new Set(
+            items
+              .map((i) => i.currencyCode)
+              .filter(Boolean)
+          )
+        );
 
-        // Set default from/to on first load
-        setFrom(unique[0] ?? "");
-        setTo(unique[1] ?? unique[0] ?? "");
+        setCurrencies(unique);
+        setFrom(unique[0] || "");
+        setTo(unique[1] || unique[0] || "");
       } catch (err: any) {
         setRatesError(
           err?.response?.data?.message || err?.message || "Network error. Could not fetch rates."
@@ -669,11 +674,11 @@ function CurrencyConverter() {
               {convertedResult === null ? "—" : formatCurrencyAmount(convertedResult, convertedTo)}
             </p>
           )}
-          {convertedUnitRate !== null && convertedFrom && convertedTo && (
+          {/* {convertedUnitRate !== null && convertedFrom && convertedTo && (
             <p className="text-[11px] text-slate-400 mt-1">
               1 {convertedFrom} = {formatCurrencyAmount(convertedUnitRate, convertedTo)}
             </p>
-          )}
+          )} */}
         </div>
       </div>
     </div>
@@ -727,9 +732,8 @@ function CurrencyOverviewCard({ item }: { item: BalanceByCurrency }) {
           <p className="text-[13px] font-medium text-slate-700 mt-0.5">{item.currencyCode}</p>
         </div>
         <div
-          className={`w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold shrink-0 ${
-            isPositive ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"
-          }`}
+          className={`w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold shrink-0 ${isPositive ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"
+            }`}
         >
           {getCurrencyIcon(item.currencyCode)}
         </div>

@@ -5,6 +5,7 @@ import { CreateLoanRequest } from "./LoanFormModal";
 import ConfirmDeleteModal from "../ui/Model/ConfirmDeleteModal";
 import { AccountService } from "@/lib/account";
 import { useRouter } from "next/navigation";
+import ReactDOM from "react-dom";
 import toast from "react-hot-toast";
 import { Loader2, ChevronLeft, ChevronRight, MoreHorizontal, Pencil, Trash2, RefreshCw } from "lucide-react";
 import LoanFormModal from "./LoanFormModal";
@@ -44,11 +45,17 @@ function ActionDropdown({
   onRepayment: (item: LoanDto) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState({ top: 0, left: 0 });
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
+  // Xid marka dibadda la gujiyо
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
+      if (
+        menuRef.current && !menuRef.current.contains(e.target as Node) &&
+        btnRef.current && !btnRef.current.contains(e.target as Node)
+      ) {
         setOpen(false);
       }
     };
@@ -56,37 +63,52 @@ function ActionDropdown({
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  // Xid marka scroll ama resize dhaco
+  useEffect(() => {
+    if (!open) return;
+    const close = () => setOpen(false);
+    window.addEventListener("scroll", close, true);
+    window.addEventListener("resize", close);
+    return () => {
+      window.removeEventListener("scroll", close, true);
+      window.removeEventListener("resize", close);
+    };
+  }, [open]);
+
+  const handleOpen = () => {
+    if (btnRef.current) {
+      const rect = btnRef.current.getBoundingClientRect();
+      setPos({
+        top: rect.bottom + 4,
+        left: rect.right - 160,
+      });
+    }
+    setOpen((v) => !v);
+  };
+
   return (
     <div className="flex items-center justify-center gap-2">
-
-      {/* Edit
       <button
-        onClick={() => onEdit(item)}
-        className="bg-[#299cdb] text-white px-3 py-1 rounded text-[11px] shadow-sm hover:brightness-110 flex items-center gap-1"
+        ref={btnRef}
+        onClick={handleOpen}
+        className="p-1.5 rounded border border-gray-200 hover:bg-gray-100 transition-colors"
+        title="More actions"
       >
-        <Pencil size={11} /> Edit
+        <MoreHorizontal size={15} className="text-gray-500" />
       </button>
 
-      Remove
-      <button
-        onClick={() => onDelete(item)}
-        className="bg-[#f06548] text-white px-3 py-1 rounded text-[11px] shadow-sm hover:brightness-110 flex items-center gap-1"
-      >
-        <Trash2 size={11} /> Remove
-      </button> */}
-
-      {/* "..." dropdown - Repayment kaliya */}
-      <div className="relative" ref={ref}>
-        <button
-          onClick={() => setOpen((v) => !v)}
-          className="p-1.5 rounded border border-gray-200 hover:bg-gray-100 transition-colors"
-          title="More actions"
-        >
-          <MoreHorizontal size={15} className="text-gray-500" />
-        </button>
-
-        {open && (
-          <div className="absolute right-0 mt-1 w-40 bg-white border border-gray-200 rounded shadow-lg z-50 py-1 text-[13px]">
+      {open && typeof document !== "undefined" &&
+        ReactDOM.createPortal(
+          <div
+            ref={menuRef}
+            style={{
+              position: "fixed",
+              top: pos.top,
+              left: pos.left,
+              zIndex: 9999,
+            }}
+            className="w-40 bg-white border border-gray-200 rounded shadow-lg py-1 text-[13px]"
+          >
             <button
               onClick={() => { setOpen(false); onRepayment(item); }}
               className="w-full text-left px-4 py-2 flex items-center gap-2 hover:bg-gray-50 text-[#0ab39c] font-medium transition-colors"
@@ -94,10 +116,10 @@ function ActionDropdown({
               <RefreshCw size={13} />
               Repayment
             </button>
-          </div>
-        )}
-      </div>
-
+          </div>,
+          document.body
+        )
+      }
     </div>
   );
 }

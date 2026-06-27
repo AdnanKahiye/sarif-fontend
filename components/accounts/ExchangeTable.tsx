@@ -41,11 +41,14 @@ export default function ExchangeTable() {
 
   const getCurrencySymbol = (currencyId?: number) => {
     if (!currencyId) return "";
+
     switch (currencyId) {
-      case 1: return "$";
-      case 2: return "Sh";
-      case 3: return "KSh";
-      default: return "";
+      case 1:
+        return "$";
+      case 6:
+        return "KSh";
+      default:
+        return "";
     }
   };
 

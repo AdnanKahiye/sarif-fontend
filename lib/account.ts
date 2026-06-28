@@ -419,4 +419,47 @@ export const AccountService = {
     return api.post("/Account/transaction", data);
   },
 
+
+    // --- CASH REPORTS ---
+
+  getCashOpeningReport(fromDate?: string, toDate?: string) {
+    const params = new URLSearchParams();
+
+    if (fromDate) params.append("fromDate", fromDate);
+    if (toDate) params.append("toDate", toDate);
+
+    const query = params.toString();
+    return api.get(`/Account/cash-opening-report${query ? `?${query}` : ""}`);
+  },
+
+  getDailyCashReport(
+    date?: string,
+    accountId?: string,
+    currencyId?: number
+  ) {
+    const params = new URLSearchParams();
+
+    if (date) params.append("date", date);
+    if (accountId) params.append("accountId", accountId);
+    if (currencyId !== undefined && currencyId !== null) {
+      params.append("currencyId", currencyId.toString());
+    }
+
+    const query = params.toString();
+    return api.get(`/Account/daily-cash-report${query ? `?${query}` : ""}`);
+  },
+
+  getMainCashAccounts() {
+    return api.get("/Account/main-cash-accounts");
+  },
+
+  getCapitalAccounts() {
+    return api.get("/Account/capital-accounts");
+  },
+
+   createCashOpening(data: any) {
+    //console.log("Creating user with data:", data);
+    return api.post("/Account/transaction", data);
+  },
+
 };

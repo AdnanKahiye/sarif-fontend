@@ -1,17 +1,24 @@
 "use client";
 
-import Sidebar from "@/components/layout/Sidebar";
-import Navbar from "@/components/layout/Navbar";
-import { useState, useEffect } from "react";
-import { useAuth } from "@/context/AuthContext";
-import { PermissionProvider } from "@/context/PermissionContext";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+import Sidebar from "@/components/layout/Sidebar";
+import Navbar from "@/components/layout/Navbar";
+
+import { useAuth } from "@/context/AuthContext";
+import { PermissionProvider } from "@/context/PermissionContext";
+import { NavigationProvider } from "@/context/NavigationContext";
+
+interface DashboardLayoutProps {
+  children: React.ReactNode;
+}
+
+export default function DashboardLayout({
+  children,
+}: DashboardLayoutProps) {
   const { user, loading } = useAuth();
   const router = useRouter();
-
-  
 
   useEffect(() => {
     if (!loading && !user) {
@@ -20,7 +27,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, [loading, user, router]);
 
   if (loading || !user) {
-    return <div className="min-h-screen bg-slate-50" />;
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950" />
+    );
   }
 
   const permissionUser = {
@@ -31,44 +40,61 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     permissions: (user as any).permissions || [],
   };
 
-  // 1. Wrap EVERYTHING in the Provider first
   return (
     <PermissionProvider user={permissionUser}>
-      <DashboardInnerContent>{children}</DashboardInnerContent>
+      <NavigationProvider>
+        <DashboardInnerContent>
+          {children}
+        </DashboardInnerContent>
+      </NavigationProvider>
     </PermissionProvider>
   );
 }
 
-// 2. This component now safely sits WITHIN the PermissionProvider
-function DashboardInnerContent({ children }: { children: React.ReactNode }) {
+function DashboardInnerContent({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem("sidebarCollapsed");
-    if (saved !== null) setIsSidebarCollapsed(saved === "true");
+
+    if (saved !== null) {
+      setIsSidebarCollapsed(saved === "true");
+    }
   }, []);
 
-  const handleCollapse = (val: boolean) => {
-    setIsSidebarCollapsed(val);
-    localStorage.setItem("sidebarCollapsed", String(val));
+  const handleCollapse = (collapsed: boolean) => {
+    setIsSidebarCollapsed(collapsed);
+    localStorage.setItem(
+      "sidebarCollapsed",
+      String(collapsed)
+    );
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex overflow-hidden">
-      <Sidebar 
-        isCollapsed={isSidebarCollapsed} 
+    <div className="min-h-screen flex overflow-hidden bg-slate-50 dark:bg-slate-950">
+      <Sidebar
+        isCollapsed={isSidebarCollapsed}
         isMobileOpen={isMobileOpen}
         onCloseMobile={() => setIsMobileOpen(false)}
       />
 
-      <div className={`flex flex-col flex-1 transition-all duration-300 ${isSidebarCollapsed ? "lg:ml-20" : "lg:ml-64"}`}>
-        <Navbar 
-          isSidebarCollapsed={isSidebarCollapsed} 
-          onCollapse={handleCollapse} 
+      <div
+        className={`flex flex-1 flex-col transition-all duration-300 ${
+          isSidebarCollapsed ? "lg:ml-20" : "lg:ml-64"
+        }`}
+      >
+        <Navbar
+          isSidebarCollapsed={isSidebarCollapsed}
+          onCollapse={handleCollapse}
           onOpenMobile={() => setIsMobileOpen(true)}
         />
-        <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto">
+
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
           <div className="mx-auto max-w-[1600px]">
             {children}
           </div>

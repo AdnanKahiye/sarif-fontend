@@ -5,7 +5,7 @@ import CustomerFormModal, { CustomerFormData } from "./CustomerFormModal";
 import ConfirmDeleteModal from "../ui/Model/ConfirmDeleteModal";
 import LoanFormModal from "@/components/accounts/LoanFormModal";
 import { useRouter } from "next/navigation";
-import AccountFormModal, { AccountFormData } from "@/components/accounts/AccountFormModal";
+// import AccountFormModal, { AccountFormData } from "@/components/accounts/AccountFormModal";
 import DepositFormModal from "@/components/accounts/DepositsFormModal";
 import WithdrawFormModal from "@/components/accounts/WithdrawFormModal";
 import { CustomerService } from "@/lib/customers";
@@ -166,12 +166,12 @@ function ActionDropdown({
               <CreditCard size={14} /> Loan
             </button>
             <div className="border-t border-gray-100 dark:border-gray-700 my-1" />
-            <button
+            {/* <button
               onClick={() => { setOpen(false); onCreateAccount(item); }}
               className="w-full text-left px-4 py-2 flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-[#f06548] font-medium transition-colors"
             >
               <CreditCard size={14} /> Create Account
-            </button>
+            </button> */}
           </div>
         )}
       </div>
@@ -636,7 +636,7 @@ export default function CustomerTable() {
         />
       )}
 
-      {openAccountModal && accountCustomer && (
+      {/* {openAccountModal && accountCustomer && (
         <AccountFormModal
           open={openAccountModal}
           mode="add"
@@ -656,7 +656,7 @@ export default function CustomerTable() {
             }
           }}
         />
-      )}
+      )} */}
 
     </div>
   );
